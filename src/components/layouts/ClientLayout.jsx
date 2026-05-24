@@ -1,13 +1,15 @@
 import React from 'react';
 import { Outlet, Link, useLocation } from 'react-router-dom';
-import { LayoutDashboard, BookOpen, Settings, LogOut, FileText } from 'lucide-react';
+import { LayoutDashboard, BookOpen, Settings, LogOut, FileText, Users, CreditCard } from 'lucide-react';
 import { base44 } from '@/api/base44Client';
 import { cn } from '@/lib/utils';
 
 const NAV_ITEMS = [
   { label: 'Dashboard', path: '/app', icon: LayoutDashboard, exact: true },
+  { label: 'Prospects', path: '/app/prospects', icon: Users },
   { label: 'Artifacts', path: '/app/artifacts', icon: FileText },
   { label: 'Knowledge', path: '/app/knowledge', icon: BookOpen },
+  { label: 'Credits', path: '/app/credits', icon: CreditCard },
   { label: 'Settings', path: '/app/settings', icon: Settings },
 ];
 

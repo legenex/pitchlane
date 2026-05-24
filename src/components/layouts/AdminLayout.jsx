@@ -1,12 +1,15 @@
 import React from 'react';
 import { Outlet, Link, useLocation } from 'react-router-dom';
-import { LayoutDashboard, Users, CreditCard, Settings, LogOut, ShieldCheck, BarChart2 } from 'lucide-react';
+import { LayoutDashboard, Users, CreditCard, Settings, LogOut, ShieldCheck, BarChart2, Inbox, Search, Mail } from 'lucide-react';
 import { base44 } from '@/api/base44Client';
 import { cn } from '@/lib/utils';
 
 const NAV_ITEMS = [
   { label: 'Overview', path: '/admin', icon: LayoutDashboard, exact: true },
   { label: 'Clients', path: '/admin/clients', icon: Users },
+  { label: 'Audience Queue', path: '/admin/audience-requests', icon: Inbox },
+  { label: 'Prospects', path: '/admin/prospects', icon: Search },
+  { label: 'Email Health', path: '/admin/email-deliverability', icon: Mail },
   { label: 'Plans', path: '/admin/plans', icon: CreditCard },
   { label: 'Analytics', path: '/admin/analytics', icon: BarChart2 },
   { label: 'Settings', path: '/admin/settings', icon: Settings },

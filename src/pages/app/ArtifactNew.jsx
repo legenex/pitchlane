@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, useSearchParams } from 'react-router-dom';
 import { base44 } from '@/api/base44Client';
 import useCurrentUser from '@/lib/useCurrentUser';
 import { generateArtifact } from '@/functions/generateArtifact';
@@ -16,9 +16,12 @@ const STEPS = ['Who is this for?', 'Choose template', 'Generation prompt', 'Gene
 export default function ArtifactNew() {
   const { user, clientId } = useCurrentUser();
   const navigate = useNavigate();
+  const [searchParams] = useSearchParams();
   const { toast } = useToast();
+  const prospectIdParam = searchParams.get('prospect_id');
   const [step, setStep] = useState(0);
-  const [prospectMode, setProspectMode] = useState('quick_paste');
+  const [prospectMode, setProspectMode] = useState(prospectIdParam ? 'prospect' : 'quick_paste');
+  const [selectedProspect, setSelectedProspect] = useState(null);
   const [prospectContext, setProspectContext] = useState('');
   const [templates, setTemplates] = useState([]);
   const [selectedTemplate, setSelectedTemplate] = useState(null);
@@ -32,6 +35,24 @@ export default function ArtifactNew() {
     if (!clientId) return;
     loadData();
   }, [clientId]);
+
+  useEffect(() => {
+    if (!prospectIdParam || !clientId) return;
+    base44.entities.Prospect.filter({ id: prospectIdParam }).then(ps => {
+      if (ps.length) {
+        const p = ps[0];
+        setSelectedProspect(p);
+        const ctx = [
+          p.full_name,
+          p.title && p.company ? `${p.title} at ${p.company}` : (p.company || p.title || ''),
+          [p.location_city, p.location_state].filter(Boolean).join(', '),
+          (p.intent_signals || []).length ? `Intent: ${p.intent_signals.join(', ')}` : '',
+        ].filter(Boolean).join('\n');
+        setProspectContext(ctx);
+        setStep(1); // Skip to template step since prospect is pre-filled
+      }
+    });
+  }, [prospectIdParam, clientId]);
 
   const loadData = async () => {
     setLoading(true);
@@ -80,9 +101,12 @@ export default function ArtifactNew() {
       template_id: selectedTemplate?.id,
       generation_prompt: prompt,
       prospect_context: prospectContext,
-      title: prospectContext
-        ? `Pitch for ${prospectContext.split('\n')[0].slice(0, 60)}`
-        : `New Pitch — ${new Date().toLocaleDateString()}`,
+      prospect_id: selectedProspect?.id || null,
+      title: selectedProspect?.full_name
+        ? `Pitch for ${selectedProspect.full_name}`
+        : prospectContext
+          ? `Pitch for ${prospectContext.split('\n')[0].slice(0, 60)}`
+          : `New Pitch — ${new Date().toLocaleDateString()}`,
     });
     setGenerating(false);
     if (res.data?.artifact) {
@@ -119,14 +143,21 @@ export default function ArtifactNew() {
           <div className="space-y-4">
             <h2 className="text-lg font-semibold">Who is this pitch for?</h2>
             <div className="grid gap-3">
-              <Card
-                className={`cursor-not-allowed opacity-50 border-2 ${prospectMode === 'prospect' ? 'border-primary' : 'border-border'}`}
-              >
-                <CardContent className="p-4">
-                  <div className="font-medium mb-1">Select a prospect from inbox</div>
-                  <div className="text-sm text-muted-foreground">Coming in Week 3</div>
-                </CardContent>
-              </Card>
+              {selectedProspect ? (
+                <Card className="border-2 border-primary bg-primary/5">
+                  <CardContent className="p-4">
+                    <div className="font-medium mb-1">Prospect: {selectedProspect.full_name}</div>
+                    <div className="text-sm text-muted-foreground">{selectedProspect.title && selectedProspect.company ? `${selectedProspect.title} @ ${selectedProspect.company}` : selectedProspect.email}</div>
+                  </CardContent>
+                </Card>
+              ) : (
+                <Card className="cursor-not-allowed opacity-50 border-2 border-border">
+                  <CardContent className="p-4">
+                    <div className="font-medium mb-1">Select a prospect from inbox</div>
+                    <div className="text-sm text-muted-foreground">Use "Generate Artifact" from a prospect's profile.</div>
+                  </CardContent>
+                </Card>
+              )}
               <Card
                 onClick={() => setProspectMode('quick_paste')}
                 className={`cursor-pointer border-2 transition-colors ${prospectMode === 'quick_paste' ? 'border-primary bg-primary/5' : 'border-border hover:border-primary/40'}`}

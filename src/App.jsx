@@ -14,6 +14,13 @@ import Artifacts from './pages/app/Artifacts';
 import ArtifactNew from './pages/app/ArtifactNew';
 import ArtifactEdit from './pages/app/ArtifactEdit';
 import ArtifactAnalytics from './pages/app/ArtifactAnalytics';
+import Prospects from './pages/app/Prospects';
+import ProspectDetail from './pages/app/ProspectDetail';
+import AudienceRequestForm from './pages/app/AudienceRequestForm';
+import AudienceRequestHistory from './pages/app/AudienceRequestHistory';
+import AudienceRequestDetail from './pages/app/AudienceRequestDetail';
+import Credits from './pages/app/Credits';
+import ProspectImport from './pages/app/ProspectImport';
 import AdminLayout from '@/components/layouts/AdminLayout.jsx';
 import AdminOverview from './pages/admin/Overview';
 import AdminClients from './pages/admin/Clients';
@@ -21,6 +28,10 @@ import AdminPlans from './pages/admin/Plans';
 import AdminSettings from './pages/admin/Settings';
 import ClientArtifacts from './pages/admin/ClientArtifacts';
 import AdminAnalytics from './pages/admin/AdminAnalytics';
+import AudienceRequests from './pages/admin/AudienceRequests';
+import AudienceRequestFulfill from './pages/admin/AudienceRequestFulfill';
+import AdminProspects from './pages/admin/AdminProspects';
+import EmailDeliverability from './pages/admin/EmailDeliverability';
 import ArtifactViewer from './pages/public/ArtifactViewer';
 
 const AuthenticatedApp = () => {
@@ -60,6 +71,13 @@ const AuthenticatedApp = () => {
         <Route path="/app/artifacts/new" element={<ArtifactNew />} />
         <Route path="/app/artifacts/:id/edit" element={<ArtifactEdit />} />
         <Route path="/app/artifacts/:id/analytics" element={<ArtifactAnalytics />} />
+        <Route path="/app/prospects" element={<Prospects />} />
+        <Route path="/app/prospects/request" element={<AudienceRequestForm />} />
+        <Route path="/app/prospects/requests" element={<AudienceRequestHistory />} />
+        <Route path="/app/prospects/requests/:id" element={<AudienceRequestDetail />} />
+        <Route path="/app/prospects/import" element={<ProspectImport />} />
+        <Route path="/app/prospects/:id" element={<ProspectDetail />} />
+        <Route path="/app/credits" element={<Credits />} />
       </Route>
 
       {/* Admin */}
@@ -70,6 +88,10 @@ const AuthenticatedApp = () => {
         <Route path="/admin/plans" element={<AdminPlans />} />
         <Route path="/admin/settings" element={<AdminSettings />} />
         <Route path="/admin/analytics" element={<AdminAnalytics />} />
+        <Route path="/admin/audience-requests" element={<AudienceRequests />} />
+        <Route path="/admin/audience-requests/:id" element={<AudienceRequestFulfill />} />
+        <Route path="/admin/prospects" element={<AdminProspects />} />
+        <Route path="/admin/email-deliverability" element={<EmailDeliverability />} />
       </Route>
 
       <Route path="*" element={<PageNotFound />} />

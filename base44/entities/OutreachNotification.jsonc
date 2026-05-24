@@ -1,0 +1,38 @@
+{
+  "name": "OutreachNotification",
+  "type": "object",
+  "properties": {
+    "client_id": {
+      "type": "string"
+    },
+    "type": {
+      "type": "string",
+      "enum": [
+        "artifact_hot",
+        "artifact_viewed_first_time",
+        "email_replied",
+        "email_bounced",
+        "audience_fulfilled",
+        "prospect_hot"
+      ]
+    },
+    "prospect_id": {
+      "type": "string"
+    },
+    "artifact_id": {
+      "type": "string"
+    },
+    "message": {
+      "type": "string"
+    },
+    "read": {
+      "type": "boolean",
+      "default": false
+    }
+  },
+  "required": [
+    "client_id",
+    "type",
+    "message"
+  ]
+}

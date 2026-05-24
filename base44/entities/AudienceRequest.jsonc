@@ -1,0 +1,71 @@
+{
+  "name": "AudienceRequest",
+  "type": "object",
+  "properties": {
+    "client_id": {
+      "type": "string"
+    },
+    "title": {
+      "type": "string"
+    },
+    "niche": {
+      "type": "string"
+    },
+    "target_geo": {
+      "type": "string"
+    },
+    "target_audience_description": {
+      "type": "string"
+    },
+    "intent_signals": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      }
+    },
+    "requested_quantity": {
+      "type": "number"
+    },
+    "credits_committed": {
+      "type": "number"
+    },
+    "status": {
+      "type": "string",
+      "enum": [
+        "pending",
+        "in_progress",
+        "fulfilled",
+        "partial",
+        "cancelled"
+      ],
+      "default": "pending"
+    },
+    "fulfillment_notes": {
+      "type": "string"
+    },
+    "fulfilled_quantity": {
+      "type": "number",
+      "default": 0
+    },
+    "fulfilled_at": {
+      "type": "string",
+      "format": "date-time"
+    },
+    "requested_at": {
+      "type": "string",
+      "format": "date-time"
+    },
+    "requested_by": {
+      "type": "string"
+    },
+    "is_rush": {
+      "type": "boolean",
+      "default": false
+    }
+  },
+  "required": [
+    "client_id",
+    "title",
+    "requested_quantity"
+  ]
+}

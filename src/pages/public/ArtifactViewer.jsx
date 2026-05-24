@@ -2,6 +2,7 @@ import React, { useState, useEffect, useRef, useCallback } from 'react';
 import { useParams, useSearchParams } from 'react-router-dom';
 import { base44 } from '@/api/base44Client';
 import { trackArtifactView } from '@/functions/trackArtifactView';
+import { resolveProspectPid } from '@/functions/resolveProspectPid';
 import ServiceProRenderer from '@/components/artifacts/ServiceProRenderer';
 
 function getDeviceType() {
@@ -24,6 +25,7 @@ export default function ArtifactViewer() {
   const { slug } = useParams();
   const [searchParams] = useSearchParams();
   const isPreview = searchParams.get('preview') === '1';
+  const pidHash = searchParams.get('pid');
 
   const [artifact, setArtifact] = useState(null);
   const [brandProfile, setBrandProfile] = useState(null);
@@ -57,6 +59,14 @@ export default function ArtifactViewer() {
 
     if (!isPreview) {
       initTracking(art.id);
+      if (pidHash) {
+        resolveProspectPid({
+          action: 'resolve_and_track',
+          artifact_id: art.id,
+          pid_hash: pidHash,
+          session_id: getOrCreateSessionId(),
+        });
+      }
     }
   };
 

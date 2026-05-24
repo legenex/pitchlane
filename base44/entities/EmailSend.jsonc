@@ -1,0 +1,66 @@
+{
+  "name": "EmailSend",
+  "type": "object",
+  "properties": {
+    "email_draft_id": {
+      "type": "string"
+    },
+    "client_id": {
+      "type": "string"
+    },
+    "prospect_id": {
+      "type": "string"
+    },
+    "artifact_id": {
+      "type": "string"
+    },
+    "gmail_message_id": {
+      "type": "string"
+    },
+    "gmail_thread_id": {
+      "type": "string"
+    },
+    "from_address": {
+      "type": "string"
+    },
+    "to_address": {
+      "type": "string"
+    },
+    "subject": {
+      "type": "string"
+    },
+    "sent_at": {
+      "type": "string",
+      "format": "date-time"
+    },
+    "delivery_status": {
+      "type": "string",
+      "enum": [
+        "sent",
+        "bounced",
+        "complained",
+        "opened",
+        "clicked",
+        "replied"
+      ],
+      "default": "sent"
+    },
+    "bounce_reason": {
+      "type": "string"
+    },
+    "opened_at": {
+      "type": "string",
+      "format": "date-time"
+    },
+    "replied_at": {
+      "type": "string",
+      "format": "date-time"
+    }
+  },
+  "required": [
+    "client_id",
+    "prospect_id",
+    "to_address",
+    "subject"
+  ]
+}

@@ -1,0 +1,117 @@
+{
+  "name": "Prospect",
+  "type": "object",
+  "properties": {
+    "client_id": {
+      "type": "string"
+    },
+    "audience_request_id": {
+      "type": "string"
+    },
+    "first_name": {
+      "type": "string"
+    },
+    "last_name": {
+      "type": "string"
+    },
+    "full_name": {
+      "type": "string"
+    },
+    "email": {
+      "type": "string"
+    },
+    "email_verified": {
+      "type": "boolean",
+      "default": false
+    },
+    "phone": {
+      "type": "string"
+    },
+    "phone_hlr_result": {
+      "type": "object"
+    },
+    "phone_hlr_status": {
+      "type": "string",
+      "enum": [
+        "pending",
+        "validated",
+        "failed",
+        "not_run"
+      ],
+      "default": "not_run"
+    },
+    "linkedin_url": {
+      "type": "string"
+    },
+    "company": {
+      "type": "string"
+    },
+    "title": {
+      "type": "string"
+    },
+    "location_city": {
+      "type": "string"
+    },
+    "location_state": {
+      "type": "string"
+    },
+    "location_country": {
+      "type": "string"
+    },
+    "intent_signals": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      }
+    },
+    "enrichment_data": {
+      "type": "object"
+    },
+    "source": {
+      "type": "string"
+    },
+    "source_record_id": {
+      "type": "string"
+    },
+    "status": {
+      "type": "string",
+      "enum": [
+        "new",
+        "contacted",
+        "engaged",
+        "qualified",
+        "hot",
+        "not_interested",
+        "bounced",
+        "archived"
+      ],
+      "default": "new"
+    },
+    "last_artifact_id": {
+      "type": "string"
+    },
+    "last_contacted_at": {
+      "type": "string",
+      "format": "date-time"
+    },
+    "last_viewed_artifact_at": {
+      "type": "string",
+      "format": "date-time"
+    },
+    "total_artifact_views": {
+      "type": "number",
+      "default": 0
+    },
+    "total_time_spent_seconds": {
+      "type": "number",
+      "default": 0
+    },
+    "notes": {
+      "type": "string"
+    }
+  },
+  "required": [
+    "client_id",
+    "email"
+  ]
+}

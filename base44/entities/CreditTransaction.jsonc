@@ -1,0 +1,40 @@
+{
+  "name": "CreditTransaction",
+  "type": "object",
+  "properties": {
+    "client_id": {
+      "type": "string"
+    },
+    "amount": {
+      "type": "number",
+      "description": "Positive = added, negative = spent"
+    },
+    "balance_after": {
+      "type": "number"
+    },
+    "transaction_type": {
+      "type": "string",
+      "enum": [
+        "purchase",
+        "audience_request",
+        "refund",
+        "admin_adjustment",
+        "plan_grant"
+      ]
+    },
+    "reference_id": {
+      "type": "string"
+    },
+    "reason": {
+      "type": "string"
+    },
+    "created_by": {
+      "type": "string"
+    }
+  },
+  "required": [
+    "client_id",
+    "amount",
+    "transaction_type"
+  ]
+}

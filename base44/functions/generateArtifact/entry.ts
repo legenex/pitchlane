@@ -27,7 +27,7 @@ Deno.serve(async (req) => {
     if (!user) return Response.json({ error: 'Unauthorized' }, { status: 401 });
 
     const body = await req.json();
-    const { client_id, template_id, generation_prompt, prospect_context, title } = body;
+    const { client_id, template_id, generation_prompt, prospect_context, prospect_id, title } = body;
 
     // Load client + plan
     const clients = await base44.entities.Client.filter({ id: client_id });
@@ -161,6 +161,7 @@ Template: "${template.slug || 'service_pro'}".`;
     const artifact = await base44.entities.Artifact.create({
       client_id,
       template_id,
+      prospect_id: prospect_id || null,
       title: title || `New Pitch — ${new Date().toLocaleDateString()}`,
       public_slug,
       content_json: result,
@@ -170,6 +171,11 @@ Template: "${template.slug || 'service_pro'}".`;
       revisions_allowed: plan?.revisions_per_artifact || 3,
       generation_prompt,
     });
+
+    // Link artifact back to prospect
+    if (prospect_id) {
+      await base44.entities.Prospect.update(prospect_id, { last_artifact_id: artifact.id });
+    }
 
     return Response.json({ artifact });
   } catch (error) {
