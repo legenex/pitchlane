@@ -82,8 +82,8 @@ export default function AdminClients() {
                     </DropdownMenuTrigger>
                     <DropdownMenuContent align="end">
                       <DropdownMenuItem asChild>
-                        <Link to={`/admin/clients/${client.slug}`} className="flex items-center">
-                          <Eye className="w-4 h-4 mr-2" /> View
+                        <Link to={`/admin/clients/${client.slug}/artifacts`} className="flex items-center">
+                          <Eye className="w-4 h-4 mr-2" /> View Artifacts
                         </Link>
                       </DropdownMenuItem>
                       <DropdownMenuItem onClick={() => handleImpersonate(client.slug)}>

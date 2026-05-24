@@ -1,0 +1,63 @@
+{
+  "name": "ArtifactView",
+  "type": "object",
+  "properties": {
+    "artifact_id": {
+      "type": "string"
+    },
+    "session_id": {
+      "type": "string"
+    },
+    "prospect_id": {
+      "type": "string"
+    },
+    "ip_hash": {
+      "type": "string"
+    },
+    "user_agent": {
+      "type": "string"
+    },
+    "referrer": {
+      "type": "string"
+    },
+    "country": {
+      "type": "string"
+    },
+    "device_type": {
+      "type": "string",
+      "enum": [
+        "mobile",
+        "tablet",
+        "desktop"
+      ]
+    },
+    "opened_at": {
+      "type": "string",
+      "format": "date-time"
+    },
+    "time_spent_seconds": {
+      "type": "number",
+      "default": 0
+    },
+    "sections_viewed": {
+      "type": "array",
+      "items": {
+        "type": "object"
+      }
+    },
+    "cta_clicks": {
+      "type": "array",
+      "items": {
+        "type": "object"
+      }
+    },
+    "last_heartbeat_at": {
+      "type": "string",
+      "format": "date-time"
+    }
+  },
+  "required": [
+    "artifact_id",
+    "session_id"
+  ]
+}

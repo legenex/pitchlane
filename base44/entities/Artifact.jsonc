@@ -1,0 +1,66 @@
+{
+  "name": "Artifact",
+  "type": "object",
+  "properties": {
+    "client_id": {
+      "type": "string"
+    },
+    "prospect_id": {
+      "type": "string"
+    },
+    "template_id": {
+      "type": "string"
+    },
+    "title": {
+      "type": "string"
+    },
+    "public_slug": {
+      "type": "string"
+    },
+    "content_json": {
+      "type": "object"
+    },
+    "accent_color": {
+      "type": "string",
+      "default": "#6B4226"
+    },
+    "status": {
+      "type": "string",
+      "enum": [
+        "draft",
+        "published",
+        "archived"
+      ],
+      "default": "draft"
+    },
+    "revisions_used": {
+      "type": "number",
+      "default": 0
+    },
+    "revisions_allowed": {
+      "type": "number",
+      "default": 3
+    },
+    "generation_prompt": {
+      "type": "string"
+    },
+    "view_count": {
+      "type": "number",
+      "default": 0
+    },
+    "last_viewed_at": {
+      "type": "string",
+      "format": "date-time"
+    },
+    "published_at": {
+      "type": "string",
+      "format": "date-time"
+    }
+  },
+  "required": [
+    "client_id",
+    "template_id",
+    "title",
+    "public_slug"
+  ]
+}

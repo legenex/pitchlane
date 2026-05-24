@@ -10,16 +10,22 @@ import ClientLayout from '@/components/layouts/ClientLayout.jsx';
 import Dashboard from './pages/app/Dashboard';
 import Knowledge from './pages/app/Knowledge';
 import ClientSettings from './pages/app/Settings';
+import Artifacts from './pages/app/Artifacts';
+import ArtifactNew from './pages/app/ArtifactNew';
+import ArtifactEdit from './pages/app/ArtifactEdit';
+import ArtifactAnalytics from './pages/app/ArtifactAnalytics';
 import AdminLayout from '@/components/layouts/AdminLayout.jsx';
 import AdminOverview from './pages/admin/Overview';
 import AdminClients from './pages/admin/Clients';
 import AdminPlans from './pages/admin/Plans';
 import AdminSettings from './pages/admin/Settings';
+import ClientArtifacts from './pages/admin/ClientArtifacts';
+import AdminAnalytics from './pages/admin/AdminAnalytics';
+import ArtifactViewer from './pages/public/ArtifactViewer';
 
 const AuthenticatedApp = () => {
   const { isLoadingAuth, isLoadingPublicSettings, authError, navigateToLogin } = useAuth();
 
-  // Show loading spinner while checking app public settings or auth
   if (isLoadingPublicSettings || isLoadingAuth) {
     return (
       <div className="fixed inset-0 flex items-center justify-center">
@@ -28,34 +34,42 @@ const AuthenticatedApp = () => {
     );
   }
 
-  // Handle authentication errors
   if (authError) {
     if (authError.type === 'user_not_registered') {
       return <UserNotRegisteredError />;
     } else if (authError.type === 'auth_required') {
-      // Redirect to login automatically
       navigateToLogin();
       return null;
     }
   }
 
-  // Render the main app
   return (
     <Routes>
       <Route path="/" element={<Navigate to="/app/onboarding" replace />} />
       <Route path="/app/onboarding" element={<Onboarding />} />
-      
+
+      {/* Public artifact viewer — no auth required */}
+      <Route path="/p/:slug" element={<ArtifactViewer />} />
+
+      {/* Client app */}
       <Route element={<ClientLayout />}>
         <Route path="/app" element={<Dashboard />} />
         <Route path="/app/knowledge" element={<Knowledge />} />
         <Route path="/app/settings" element={<ClientSettings />} />
+        <Route path="/app/artifacts" element={<Artifacts />} />
+        <Route path="/app/artifacts/new" element={<ArtifactNew />} />
+        <Route path="/app/artifacts/:id/edit" element={<ArtifactEdit />} />
+        <Route path="/app/artifacts/:id/analytics" element={<ArtifactAnalytics />} />
       </Route>
 
+      {/* Admin */}
       <Route element={<AdminLayout />}>
         <Route path="/admin" element={<AdminOverview />} />
         <Route path="/admin/clients" element={<AdminClients />} />
+        <Route path="/admin/clients/:slug/artifacts" element={<ClientArtifacts />} />
         <Route path="/admin/plans" element={<AdminPlans />} />
         <Route path="/admin/settings" element={<AdminSettings />} />
+        <Route path="/admin/analytics" element={<AdminAnalytics />} />
       </Route>
 
       <Route path="*" element={<PageNotFound />} />
@@ -63,9 +77,7 @@ const AuthenticatedApp = () => {
   );
 };
 
-
 function App() {
-
   return (
     <AuthProvider>
       <QueryClientProvider client={queryClientInstance}>

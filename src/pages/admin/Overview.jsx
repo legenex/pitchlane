@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { base44 } from '@/api/base44Client';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
-import { Users, FileText, TrendingUp, Zap } from 'lucide-react';
+import { Users, FileText, TrendingUp } from 'lucide-react';
 
 export default function AdminOverview() {
   const [stats, setStats] = useState({ clients: 0, active: 0, trial: 0, artifacts: 0, mrr: 0 });
@@ -14,8 +14,11 @@ export default function AdminOverview() {
   }, []);
 
   const loadData = async () => {
-    const clients = await base44.asServiceRole.entities.Client.list();
-    const plans = await base44.asServiceRole.entities.Plan.list();
+    const [clients, plans, artifacts] = await Promise.all([
+      base44.asServiceRole.entities.Client.list(),
+      base44.asServiceRole.entities.Plan.list(),
+      base44.asServiceRole.entities.Artifact.list(),
+    ]);
     
     const active = clients.filter(c => c.status === 'active').length;
     const trial = clients.filter(c => c.plan_id === plans.find(p => p.name === 'Trial')?.id).length;
@@ -29,7 +32,7 @@ export default function AdminOverview() {
       clients: clients.length,
       active,
       trial,
-      artifacts: 0, // Populated in Week 2
+      artifacts: artifacts.length,
       mrr,
     });
 
@@ -51,7 +54,7 @@ export default function AdminOverview() {
         <KPITile icon={Users} label="Total Clients" value={stats.clients} />
         <KPITile icon={Users} label="Active Clients" value={stats.active} sublabel={`${stats.trial} trial`} />
         <KPITile icon={TrendingUp} label="MRR" value={`$${(stats.mrr / 100).toLocaleString()}`} />
-        <KPITile icon={Zap} label="Credits in Circulation" value="0" />
+        <KPITile icon={FileText} label="Total Artifacts" value={stats.artifacts} />
       </div>
 
       {/* Recent Signups */}

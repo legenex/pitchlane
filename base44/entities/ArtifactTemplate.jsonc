@@ -1,0 +1,49 @@
+{
+  "name": "ArtifactTemplate",
+  "type": "object",
+  "properties": {
+    "slug": {
+      "type": "string"
+    },
+    "name": {
+      "type": "string"
+    },
+    "description": {
+      "type": "string"
+    },
+    "preview_image_url": {
+      "type": "string"
+    },
+    "default_section_order": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      }
+    },
+    "recommended_niches": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      }
+    },
+    "accent_default": {
+      "type": "string",
+      "default": "#6B4226"
+    },
+    "layout_variant": {
+      "type": "string",
+      "enum": [
+        "single_scroll",
+        "sectioned_pages",
+        "sidebar_nav"
+      ]
+    },
+    "font_pair_recommended": {
+      "type": "object"
+    }
+  },
+  "required": [
+    "slug",
+    "name"
+  ]
+}
