@@ -15,9 +15,9 @@ export default function AdminOverview() {
 
   const loadData = async () => {
     const [clients, plans, artifacts] = await Promise.all([
-      base44.asServiceRole.entities.Client.list(),
-      base44.asServiceRole.entities.Plan.list(),
-      base44.asServiceRole.entities.Artifact.list(),
+      base44.entities.Client.list(),
+      base44.entities.Plan.list(),
+      base44.entities.Artifact.list(),
     ]);
     
     const active = clients.filter(c => c.status === 'active').length;
