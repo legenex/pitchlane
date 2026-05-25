@@ -1,0 +1,40 @@
+{
+  "name": "CreditPurchase",
+  "type": "object",
+  "properties": {
+    "client_id": {
+      "type": "string"
+    },
+    "stripe_payment_intent_id": {
+      "type": "string"
+    },
+    "credit_pack_id": {
+      "type": "string"
+    },
+    "credits_purchased": {
+      "type": "number"
+    },
+    "amount_paid": {
+      "type": "number"
+    },
+    "status": {
+      "type": "string",
+      "enum": [
+        "pending",
+        "succeeded",
+        "failed",
+        "refunded"
+      ],
+      "default": "pending"
+    },
+    "succeeded_at": {
+      "type": "string",
+      "format": "date-time"
+    }
+  },
+  "required": [
+    "client_id",
+    "credit_pack_id",
+    "credits_purchased"
+  ]
+}

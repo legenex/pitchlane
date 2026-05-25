@@ -1,0 +1,62 @@
+{
+  "name": "Invoice",
+  "type": "object",
+  "properties": {
+    "subscription_id": {
+      "type": "string"
+    },
+    "client_id": {
+      "type": "string"
+    },
+    "stripe_invoice_id": {
+      "type": "string"
+    },
+    "amount_due": {
+      "type": "number"
+    },
+    "amount_paid": {
+      "type": "number"
+    },
+    "currency": {
+      "type": "string",
+      "default": "usd"
+    },
+    "status": {
+      "type": "string",
+      "enum": [
+        "draft",
+        "open",
+        "paid",
+        "void",
+        "uncollectible"
+      ],
+      "default": "draft"
+    },
+    "invoice_pdf_url": {
+      "type": "string"
+    },
+    "hosted_invoice_url": {
+      "type": "string"
+    },
+    "billing_reason": {
+      "type": "string",
+      "enum": [
+        "subscription_create",
+        "subscription_cycle",
+        "credit_purchase",
+        "manual"
+      ]
+    },
+    "issued_at": {
+      "type": "string",
+      "format": "date-time"
+    },
+    "paid_at": {
+      "type": "string",
+      "format": "date-time"
+    }
+  },
+  "required": [
+    "client_id"
+  ]
+}

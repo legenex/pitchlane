@@ -1,0 +1,50 @@
+{
+  "name": "Subscription",
+  "type": "object",
+  "properties": {
+    "client_id": {
+      "type": "string"
+    },
+    "stripe_customer_id": {
+      "type": "string"
+    },
+    "stripe_subscription_id": {
+      "type": "string"
+    },
+    "plan_id": {
+      "type": "string"
+    },
+    "status": {
+      "type": "string",
+      "enum": [
+        "trialing",
+        "active",
+        "past_due",
+        "canceled",
+        "paused"
+      ],
+      "default": "trialing"
+    },
+    "current_period_start": {
+      "type": "string",
+      "format": "date-time"
+    },
+    "current_period_end": {
+      "type": "string",
+      "format": "date-time"
+    },
+    "cancel_at_period_end": {
+      "type": "boolean",
+      "default": false
+    },
+    "payment_method_last4": {
+      "type": "string"
+    },
+    "payment_method_brand": {
+      "type": "string"
+    }
+  },
+  "required": [
+    "client_id"
+  ]
+}

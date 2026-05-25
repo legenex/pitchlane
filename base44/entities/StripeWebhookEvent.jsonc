@@ -1,0 +1,23 @@
+{
+  "name": "StripeWebhookEvent",
+  "type": "object",
+  "properties": {
+    "stripe_event_id": {
+      "type": "string"
+    },
+    "event_type": {
+      "type": "string"
+    },
+    "processed_at": {
+      "type": "string",
+      "format": "date-time"
+    },
+    "payload_summary": {
+      "type": "object"
+    }
+  },
+  "required": [
+    "stripe_event_id",
+    "event_type"
+  ]
+}

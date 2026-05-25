@@ -1,0 +1,24 @@
+{
+  "name": "EmailSignature",
+  "type": "object",
+  "properties": {
+    "user_id": {
+      "type": "string"
+    },
+    "name": {
+      "type": "string"
+    },
+    "html": {
+      "type": "string"
+    },
+    "is_default": {
+      "type": "boolean",
+      "default": false
+    }
+  },
+  "required": [
+    "user_id",
+    "name",
+    "html"
+  ]
+}

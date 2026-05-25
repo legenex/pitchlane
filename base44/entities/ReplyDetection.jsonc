@@ -1,0 +1,40 @@
+{
+  "name": "ReplyDetection",
+  "type": "object",
+  "properties": {
+    "email_send_id": {
+      "type": "string"
+    },
+    "gmail_message_id": {
+      "type": "string"
+    },
+    "gmail_thread_id": {
+      "type": "string"
+    },
+    "reply_snippet": {
+      "type": "string"
+    },
+    "reply_received_at": {
+      "type": "string",
+      "format": "date-time"
+    },
+    "processed_at": {
+      "type": "string",
+      "format": "date-time"
+    },
+    "sentiment": {
+      "type": "string",
+      "enum": [
+        "positive",
+        "neutral",
+        "negative",
+        "unclassified"
+      ],
+      "default": "unclassified"
+    }
+  },
+  "required": [
+    "email_send_id",
+    "gmail_message_id"
+  ]
+}

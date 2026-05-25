@@ -1,0 +1,40 @@
+{
+  "name": "NotificationPreference",
+  "type": "object",
+  "properties": {
+    "user_id": {
+      "type": "string"
+    },
+    "in_app_enabled": {
+      "type": "boolean",
+      "default": true
+    },
+    "email_enabled": {
+      "type": "boolean",
+      "default": true
+    },
+    "slack_webhook_url": {
+      "type": "string"
+    },
+    "slack_enabled": {
+      "type": "boolean",
+      "default": false
+    },
+    "digest_frequency": {
+      "type": "string",
+      "enum": [
+        "realtime",
+        "hourly",
+        "daily",
+        "never"
+      ],
+      "default": "realtime"
+    },
+    "types_enabled": {
+      "type": "object"
+    }
+  },
+  "required": [
+    "user_id"
+  ]
+}
