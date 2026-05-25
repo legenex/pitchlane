@@ -6,6 +6,8 @@ import { Input } from '@/components/ui/input';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import EmailSignaturesTab from '@/components/settings/EmailSignaturesTab';
+import NotificationPreferencesTab from '@/components/settings/NotificationPreferencesTab';
 import { Mail, Lock, Users, Zap, Trash2, ArrowRight } from 'lucide-react';
 
 export default function Settings() {
@@ -35,10 +37,12 @@ export default function Settings() {
       </div>
 
       <Tabs defaultValue="account" className="w-full">
-        <TabsList className="grid w-full grid-cols-4">
+        <TabsList className="grid w-full grid-cols-6">
           <TabsTrigger value="account">Account</TabsTrigger>
           <TabsTrigger value="plan">Plan</TabsTrigger>
           <TabsTrigger value="team">Team</TabsTrigger>
+          <TabsTrigger value="emails">Emails</TabsTrigger>
+          <TabsTrigger value="notifications">Notifications</TabsTrigger>
           <TabsTrigger value="danger">Danger</TabsTrigger>
         </TabsList>
 
@@ -99,6 +103,16 @@ export default function Settings() {
               </div>
             </CardContent>
           </Card>
+        </TabsContent>
+
+        {/* Email Signatures */}
+        <TabsContent value="emails" className="space-y-4">
+          <EmailSignaturesTab userId={user?.id} />
+        </TabsContent>
+
+        {/* Notification Preferences */}
+        <TabsContent value="notifications" className="space-y-4">
+          <NotificationPreferencesTab userId={user?.id} />
         </TabsContent>
 
         {/* Team */}

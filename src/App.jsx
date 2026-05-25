@@ -20,6 +20,10 @@ import AudienceRequestForm from './pages/app/AudienceRequestForm';
 import AudienceRequestHistory from './pages/app/AudienceRequestHistory';
 import AudienceRequestDetail from './pages/app/AudienceRequestDetail';
 import Credits from './pages/app/Credits';
+import Billing from './pages/app/Billing';
+import BillingSuccess from './pages/app/BillingSuccess';
+import BillingCancel from './pages/app/BillingCancel';
+import Notifications from './pages/app/Notifications';
 import ProspectImport from './pages/app/ProspectImport';
 import AdminLayout from '@/components/layouts/AdminLayout.jsx';
 import AdminOverview from './pages/admin/Overview';
@@ -32,6 +36,8 @@ import AudienceRequests from './pages/admin/AudienceRequests';
 import AudienceRequestFulfill from './pages/admin/AudienceRequestFulfill';
 import AdminProspects from './pages/admin/AdminProspects';
 import EmailDeliverability from './pages/admin/EmailDeliverability';
+import BillingHealth from './pages/admin/BillingHealth';
+import AuditLog from './pages/admin/AuditLog';
 import ArtifactViewer from './pages/public/ArtifactViewer';
 
 const AuthenticatedApp = () => {
@@ -78,6 +84,10 @@ const AuthenticatedApp = () => {
         <Route path="/app/prospects/import" element={<ProspectImport />} />
         <Route path="/app/prospects/:id" element={<ProspectDetail />} />
         <Route path="/app/credits" element={<Credits />} />
+        <Route path="/app/billing" element={<Billing />} />
+        <Route path="/app/billing/checkout/success" element={<BillingSuccess />} />
+        <Route path="/app/billing/checkout/cancel" element={<BillingCancel />} />
+        <Route path="/app/notifications" element={<Notifications />} />
       </Route>
 
       {/* Admin */}
@@ -92,6 +102,8 @@ const AuthenticatedApp = () => {
         <Route path="/admin/audience-requests/:id" element={<AudienceRequestFulfill />} />
         <Route path="/admin/prospects" element={<AdminProspects />} />
         <Route path="/admin/email-deliverability" element={<EmailDeliverability />} />
+        <Route path="/admin/billing" element={<BillingHealth />} />
+        <Route path="/admin/audit-log" element={<AuditLog />} />
       </Route>
 
       <Route path="*" element={<PageNotFound />} />

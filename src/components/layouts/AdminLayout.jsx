@@ -10,6 +10,8 @@ const NAV_ITEMS = [
   { label: 'Audience Queue', path: '/admin/audience-requests', icon: Inbox },
   { label: 'Prospects', path: '/admin/prospects', icon: Search },
   { label: 'Email Health', path: '/admin/email-deliverability', icon: Mail },
+  { label: 'Billing', path: '/admin/billing', icon: CreditCard },
+  { label: 'Audit Log', path: '/admin/audit-log', icon: ShieldCheck },
   { label: 'Plans', path: '/admin/plans', icon: CreditCard },
   { label: 'Analytics', path: '/admin/analytics', icon: BarChart2 },
   { label: 'Settings', path: '/admin/settings', icon: Settings },

@@ -2,8 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { base44 } from '@/api/base44Client';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
-import { Button } from '@/components/ui/button';
-import { TrendingUp, TrendingDown, AlertTriangle, DollarSign, Zap, Users } from 'lucide-react';
+import { TrendingUp, TrendingDown, AlertTriangle, DollarSign, Users, Zap } from 'lucide-react';
 import { format, startOfMonth, endOfMonth } from 'date-fns';
 
 export default function BillingHealth() {
@@ -159,7 +158,7 @@ export default function BillingHealth() {
   );
 }
 
-function KPI({ icon: Icon, label, value, sublabel }) {
+function KPI({ icon: IconComponent, label, value, sublabel }) {
   return (
     <Card>
       <CardContent className="pt-6">
@@ -170,7 +169,7 @@ function KPI({ icon: Icon, label, value, sublabel }) {
             {sublabel && <p className="text-xs text-muted-foreground mt-1">{sublabel}</p>}
           </div>
           <div className="w-9 h-9 rounded-lg bg-muted flex items-center justify-center">
-            <Icon className="w-4 h-4 text-muted-foreground" />
+            <IconComponent className="w-4 h-4 text-muted-foreground" />
           </div>
         </div>
       </CardContent>
