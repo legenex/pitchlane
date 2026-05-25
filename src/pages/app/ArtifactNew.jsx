@@ -3,15 +3,50 @@ import { useNavigate, useSearchParams } from 'react-router-dom';
 import { base44 } from '@/api/base44Client';
 import useCurrentUser from '@/lib/useCurrentUser';
 import { generateArtifact } from '@/functions/generateArtifact';
-import { Button } from '@/components/ui/button';
-import { Textarea } from '@/components/ui/textarea';
-import { Card, CardContent } from '@/components/ui/card';
-import { Badge } from '@/components/ui/badge';
 import { AlertCircle, ChevronRight, ChevronLeft, Sparkles, Loader2, CheckCircle } from 'lucide-react';
 import { motion } from 'framer-motion';
 import { useToast } from '@/components/ui/use-toast';
 
 const STEPS = ['Who is this for?', 'Choose template', 'Generation prompt', 'Generating…'];
+const TEMPLATE_ACCENTS = ['#6B4226', '#7C2D2D', '#EF3E2C'];
+
+function StepPill({ index, label, currentStep }) {
+  const done = currentStep > index;
+  const active = currentStep === index;
+  return (
+    <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+      <div style={{
+        width: 26, height: 26, borderRadius: '50%', display: 'flex', alignItems: 'center', justifyContent: 'center',
+        background: done || active ? 'var(--accent)' : 'var(--canvas)',
+        border: done || active ? 'none' : '1px solid var(--line)',
+        transition: 'all 200ms',
+      }}>
+        {done
+          ? <CheckCircle size={14} style={{ color: '#fff' }} />
+          : <span style={{ fontFamily: 'var(--font-mono)', fontSize: 11, color: active ? '#fff' : 'var(--ink-muted)', fontWeight: 600 }}>{index + 1}</span>}
+      </div>
+      <span style={{ fontFamily: 'var(--font-body)', fontSize: 13, color: active ? 'var(--ink)' : 'var(--ink-muted)', fontWeight: active ? 600 : 400 }}>{label}</span>
+      {index < 2 && <ChevronRight size={14} style={{ color: 'var(--line)', marginLeft: 4 }} />}
+    </div>
+  );
+}
+
+function OptionCard({ selected, onClick, title, description, disabled }) {
+  return (
+    <div onClick={!disabled ? onClick : undefined}
+      style={{
+        background: 'var(--surface)', borderRadius: 'var(--radius-lg)', padding: '20px 24px',
+        border: selected ? '2px solid var(--accent)' : '1px solid var(--line)',
+        cursor: disabled ? 'not-allowed' : 'pointer',
+        opacity: disabled ? 0.5 : 1,
+        transition: 'all 150ms',
+        background: selected ? 'rgba(242,92,42,0.04)' : 'var(--surface)',
+      }}>
+      <div style={{ fontFamily: 'var(--font-display)', fontSize: 18, color: 'var(--ink)', marginBottom: 4 }}>{title}</div>
+      <div style={{ fontFamily: 'var(--font-body)', fontSize: 13, color: 'var(--ink-soft)', lineHeight: 1.5 }}>{description}</div>
+    </div>
+  );
+}
 
 export default function ArtifactNew() {
   const { user, clientId } = useCurrentUser();
@@ -49,7 +84,7 @@ export default function ArtifactNew() {
           (p.intent_signals || []).length ? `Intent: ${p.intent_signals.join(', ')}` : '',
         ].filter(Boolean).join('\n');
         setProspectContext(ctx);
-        setStep(1); // Skip to template step since prospect is pre-filled
+        setStep(1);
       }
     });
   }, [prospectIdParam, clientId]);
@@ -69,7 +104,6 @@ export default function ArtifactNew() {
         if (plans.length) setPlan(plans[0]);
       }
     }
-    // Auto-select recommended template based on niche
     const clientNiche = clients[0]?.niche?.toLowerCase() || '';
     const recommended = tmps.find(t => (t.recommended_niches || []).some(n => clientNiche.includes(n)));
     setSelectedTemplate(recommended || tmps[0] || null);
@@ -78,7 +112,6 @@ export default function ArtifactNew() {
 
   useEffect(() => {
     if (!selectedTemplate || !client) return;
-    const brand_voice = '';
     const niche = client.niche || 'professional services';
     setPrompt(
       `Generate a personalized pitch for ${prospectContext ? prospectContext.split('\n')[0] : 'our prospect'}. ` +
@@ -117,141 +150,141 @@ export default function ArtifactNew() {
     }
   };
 
-  if (loading) return <div className="flex items-center justify-center h-64"><Loader2 className="w-6 h-6 animate-spin text-muted-foreground" /></div>;
+  if (loading) return (
+    <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', height: 200 }}>
+      <Loader2 size={24} style={{ color: 'var(--ink-muted)', animation: 'spin 0.8s linear infinite' }} />
+      <style>{`@keyframes spin { to { transform: rotate(360deg); } }`}</style>
+    </div>
+  );
 
   return (
-    <div className="max-w-2xl mx-auto space-y-8">
-      <div>
-        <h1 className="text-2xl font-bold mb-1">New Artifact</h1>
-        {/* Step indicator */}
-        <div className="flex gap-2 mt-4">
-          {STEPS.slice(0, 3).map((s, i) => (
-            <div key={i} className="flex items-center gap-2">
-              <div className={`w-6 h-6 rounded-full flex items-center justify-center text-xs font-bold transition-colors ${
-                step > i ? 'bg-primary text-primary-foreground' : step === i ? 'bg-primary text-primary-foreground' : 'bg-muted text-muted-foreground'
-              }`}>{step > i ? <CheckCircle className="w-3 h-3" /> : i + 1}</div>
-              <span className={`text-sm ${step === i ? 'font-medium' : 'text-muted-foreground'}`}>{s}</span>
-              {i < 2 && <ChevronRight className="w-4 h-4 text-muted-foreground" />}
-            </div>
-          ))}
-        </div>
+    <div style={{ maxWidth: 600, margin: '0 auto' }}>
+      {/* Step pills */}
+      <div style={{ display: 'flex', alignItems: 'center', gap: 0, flexWrap: 'wrap', marginBottom: 32 }}>
+        {STEPS.slice(0, 3).map((s, i) => (
+          <StepPill key={i} index={i} label={s} currentStep={step} />
+        ))}
       </div>
 
-      <motion.div key={step} initial={{ opacity: 0, x: 16 }} animate={{ opacity: 1, x: 0 }} transition={{ duration: 0.2 }}>
-        {/* Step 0: Who is this for? */}
+      <motion.div key={step} initial={{ opacity: 0, x: 12 }} animate={{ opacity: 1, x: 0 }} transition={{ duration: 0.2 }}>
+
+        {/* Step 0: Who */}
         {step === 0 && (
-          <div className="space-y-4">
-            <h2 className="text-lg font-semibold">Who is this pitch for?</h2>
-            <div className="grid gap-3">
+          <div>
+            <div style={{ fontFamily: 'var(--font-display)', fontSize: 28, color: 'var(--ink)', marginBottom: 20 }}>
+              Who is this <em style={{ fontStyle: 'italic', color: 'var(--accent)' }}>pitch for?</em>
+            </div>
+            <div style={{ display: 'flex', flexDirection: 'column', gap: 12, marginBottom: 20 }}>
               {selectedProspect ? (
-                <Card className="border-2 border-primary bg-primary/5">
-                  <CardContent className="p-4">
-                    <div className="font-medium mb-1">Prospect: {selectedProspect.full_name}</div>
-                    <div className="text-sm text-muted-foreground">{selectedProspect.title && selectedProspect.company ? `${selectedProspect.title} @ ${selectedProspect.company}` : selectedProspect.email}</div>
-                  </CardContent>
-                </Card>
+                <OptionCard selected title={`Prospect: ${selectedProspect.full_name}`}
+                  description={selectedProspect.title && selectedProspect.company ? `${selectedProspect.title} @ ${selectedProspect.company}` : selectedProspect.email} />
               ) : (
-                <Card className="cursor-not-allowed opacity-50 border-2 border-border">
-                  <CardContent className="p-4">
-                    <div className="font-medium mb-1">Select a prospect from inbox</div>
-                    <div className="text-sm text-muted-foreground">Use "Generate Artifact" from a prospect's profile.</div>
-                  </CardContent>
-                </Card>
+                <OptionCard disabled title="Select a prospect from inbox" description={'Use "Generate Artifact" from a prospect\'s profile.'} />
               )}
-              <Card
-                onClick={() => setProspectMode('quick_paste')}
-                className={`cursor-pointer border-2 transition-colors ${prospectMode === 'quick_paste' ? 'border-primary bg-primary/5' : 'border-border hover:border-primary/40'}`}
-              >
-                <CardContent className="p-4">
-                  <div className="font-medium mb-1">Quick paste</div>
-                  <div className="text-sm text-muted-foreground">Paste name, role, company, and context in any format.</div>
-                </CardContent>
-              </Card>
-              <Card
-                onClick={() => setProspectMode('test')}
-                className={`cursor-pointer border-2 transition-colors ${prospectMode === 'test' ? 'border-primary bg-primary/5' : 'border-border hover:border-primary/40'}`}
-              >
-                <CardContent className="p-4">
-                  <div className="font-medium mb-1">Test / preview only</div>
-                  <div className="text-sm text-muted-foreground">Generic pitch using your brand profile alone.</div>
-                </CardContent>
-              </Card>
+              <OptionCard selected={prospectMode === 'quick_paste'} onClick={() => setProspectMode('quick_paste')}
+                title="Quick paste" description="Paste name, role, company, and context in any format." />
+              <OptionCard selected={prospectMode === 'test'} onClick={() => setProspectMode('test')}
+                title="Test / preview only" description="Generic pitch using your brand profile alone." />
             </div>
 
             {prospectMode === 'quick_paste' && (
-              <Textarea
-                placeholder="e.g. Jane Doe, CEO at Pacific Heights Development. Looking to renovate a 4BR residence. Interested in sustainable materials."
+              <textarea
+                placeholder="e.g. Jane Doe, CEO at Pacific Heights Development. Looking to renovate a 4BR residence."
                 value={prospectContext}
                 onChange={e => setProspectContext(e.target.value)}
-                className="h-32 mt-3"
+                style={{ width: '100%', minHeight: 120, fontFamily: 'var(--font-body)', fontSize: 14, background: 'var(--surface)', border: '1px solid var(--line)', borderRadius: 'var(--radius-md)', padding: '12px 16px', color: 'var(--ink)', outline: 'none', resize: 'vertical', boxSizing: 'border-box', marginBottom: 16 }}
+                onFocus={e => e.target.style.borderColor = 'rgba(242,92,42,0.4)'}
+                onBlur={e => e.target.style.borderColor = 'var(--line)'}
               />
             )}
 
-            <Button onClick={() => setStep(1)} disabled={prospectMode === 'quick_paste' && !prospectContext.trim()} className="w-full gap-2">
-              Next <ChevronRight className="w-4 h-4" />
-            </Button>
+            <button onClick={() => setStep(1)} disabled={prospectMode === 'quick_paste' && !prospectContext.trim()}
+              style={{ width: '100%', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 6, fontFamily: 'var(--font-body)', fontSize: 14, fontWeight: 600, background: 'var(--accent)', color: '#fff', padding: '12px 0', borderRadius: 'var(--radius-pill)', border: 'none', cursor: 'pointer', boxShadow: 'var(--shadow-accent)', opacity: prospectMode === 'quick_paste' && !prospectContext.trim() ? 0.5 : 1 }}>
+              Next <ChevronRight size={15} />
+            </button>
           </div>
         )}
 
-        {/* Step 1: Choose template */}
+        {/* Step 1: Template */}
         {step === 1 && (
-          <div className="space-y-4">
-            <h2 className="text-lg font-semibold">Choose a template</h2>
-            <div className="grid gap-3">
-              {templates.map(t => {
-                const isRecommended = (t.recommended_niches || []).some(n =>
-                  (client?.niche || '').toLowerCase().includes(n)
-                );
+          <div>
+            <div style={{ fontFamily: 'var(--font-display)', fontSize: 28, color: 'var(--ink)', marginBottom: 20 }}>
+              Choose a <em style={{ fontStyle: 'italic', color: 'var(--accent)' }}>template</em>
+            </div>
+            <div style={{ display: 'flex', flexDirection: 'column', gap: 12, marginBottom: 20 }}>
+              {templates.map((t, idx) => {
+                const accent = TEMPLATE_ACCENTS[idx % TEMPLATE_ACCENTS.length];
+                const isRecommended = (t.recommended_niches || []).some(n => (client?.niche || '').toLowerCase().includes(n));
+                const selected = selectedTemplate?.id === t.id;
                 return (
-                  <Card
-                    key={t.id}
-                    onClick={() => setSelectedTemplate(t)}
-                    className={`cursor-pointer border-2 transition-colors ${selectedTemplate?.id === t.id ? 'border-primary bg-primary/5' : 'border-border hover:border-primary/40'}`}
-                  >
-                    <CardContent className="p-4">
-                      <div className="flex items-center gap-2 mb-1">
-                        <div className="font-medium">{t.name}</div>
-                        {isRecommended && <Badge className="text-xs bg-primary/10 text-primary border-primary/20">Recommended</Badge>}
+                  <div key={t.id} onClick={() => setSelectedTemplate(t)}
+                    style={{
+                      background: selected ? 'rgba(242,92,42,0.04)' : 'var(--surface)',
+                      border: selected ? `2px solid ${accent}` : '1px solid var(--line)',
+                      borderRadius: 'var(--radius-lg)', padding: '20px 24px', cursor: 'pointer', transition: 'all 150ms',
+                      display: 'flex', gap: 16, alignItems: 'center',
+                    }}>
+                    <div style={{ width: 40, height: 40, borderRadius: 10, background: accent + '22', border: `1px solid ${accent}33`, display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
+                      <div style={{ width: 18, height: 18, borderRadius: 3, background: accent, opacity: 0.7 }} />
+                    </div>
+                    <div style={{ flex: 1 }}>
+                      <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 4 }}>
+                        <span style={{ fontFamily: 'var(--font-display)', fontSize: 18, color: 'var(--ink)' }}>{t.name}</span>
+                        {isRecommended && (
+                          <span style={{ fontFamily: 'var(--font-mono)', fontSize: 9, textTransform: 'uppercase', letterSpacing: '0.14em', background: accent + '18', color: accent, borderRadius: 'var(--radius-pill)', padding: '3px 8px' }}>Recommended</span>
+                        )}
                       </div>
-                      <div className="text-sm text-muted-foreground">{t.description}</div>
-                    </CardContent>
-                  </Card>
+                      <div style={{ fontFamily: 'var(--font-body)', fontSize: 13, color: 'var(--ink-soft)', lineHeight: 1.5 }}>{t.description}</div>
+                    </div>
+                  </div>
                 );
               })}
             </div>
-            <div className="flex gap-3">
-              <Button variant="outline" onClick={() => setStep(0)} className="gap-2"><ChevronLeft className="w-4 h-4" /> Back</Button>
-              <Button onClick={() => setStep(2)} disabled={!selectedTemplate} className="flex-1 gap-2">Next <ChevronRight className="w-4 h-4" /></Button>
+            <div style={{ display: 'flex', gap: 10 }}>
+              <button onClick={() => setStep(0)} style={{ display: 'flex', alignItems: 'center', gap: 6, fontFamily: 'var(--font-body)', fontSize: 14, fontWeight: 500, background: 'var(--surface)', color: 'var(--ink-soft)', padding: '11px 20px', borderRadius: 'var(--radius-pill)', border: '1px solid var(--line)', cursor: 'pointer' }}>
+                <ChevronLeft size={14} /> Back
+              </button>
+              <button onClick={() => setStep(2)} disabled={!selectedTemplate}
+                style={{ flex: 1, display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 6, fontFamily: 'var(--font-body)', fontSize: 14, fontWeight: 600, background: 'var(--accent)', color: '#fff', padding: '11px 0', borderRadius: 'var(--radius-pill)', border: 'none', cursor: 'pointer', boxShadow: 'var(--shadow-accent)', opacity: !selectedTemplate ? 0.5 : 1 }}>
+                Next <ChevronRight size={14} />
+              </button>
             </div>
           </div>
         )}
 
-        {/* Step 2: Generation prompt */}
+        {/* Step 2: Prompt */}
         {step === 2 && (
-          <div className="space-y-4">
-            <h2 className="text-lg font-semibold">Generation prompt</h2>
-            <Textarea
+          <div>
+            <div style={{ fontFamily: 'var(--font-display)', fontSize: 28, color: 'var(--ink)', marginBottom: 20 }}>
+              Generation <em style={{ fontStyle: 'italic', color: 'var(--accent)' }}>prompt</em>
+            </div>
+            <textarea
               value={prompt}
               onChange={e => setPrompt(e.target.value)}
-              className="h-40 font-mono text-sm"
+              style={{ width: '100%', minHeight: 160, fontFamily: 'var(--font-mono)', fontSize: 13, background: 'var(--surface)', border: '1px solid var(--line)', borderRadius: 'var(--radius-md)', padding: '14px 16px', color: 'var(--ink)', outline: 'none', resize: 'vertical', boxSizing: 'border-box', marginBottom: 12, lineHeight: 1.6 }}
               placeholder="Describe what to emphasize in this pitch…"
+              onFocus={e => e.target.style.borderColor = 'rgba(242,92,42,0.4)'}
+              onBlur={e => e.target.style.borderColor = 'var(--line)'}
             />
-            <div className={`flex items-center gap-2 text-sm ${overQuota ? 'text-destructive' : 'text-muted-foreground'}`}>
-              <AlertCircle className="w-4 h-4" />
-              <span>
+            <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 20, padding: '10px 14px', background: overQuota ? 'rgba(234,67,53,0.06)' : 'var(--canvas)', borderRadius: 'var(--radius-md)' }}>
+              <AlertCircle size={14} style={{ color: overQuota ? 'var(--danger)' : 'var(--ink-muted)', flexShrink: 0 }} />
+              <span style={{ fontFamily: 'var(--font-body)', fontSize: 13, color: overQuota ? 'var(--danger)' : 'var(--ink-muted)' }}>
                 {overQuota
                   ? `Quota reached (${used}/${quota} artifacts used this period).`
                   : `This will use 1 of your ${remaining}/${quota} artifacts this period.`}
               </span>
             </div>
-            <div className="flex gap-3">
-              <Button variant="outline" onClick={() => setStep(1)} className="gap-2"><ChevronLeft className="w-4 h-4" /> Back</Button>
+            <div style={{ display: 'flex', gap: 10 }}>
+              <button onClick={() => setStep(1)} style={{ display: 'flex', alignItems: 'center', gap: 6, fontFamily: 'var(--font-body)', fontSize: 14, fontWeight: 500, background: 'var(--surface)', color: 'var(--ink-soft)', padding: '11px 20px', borderRadius: 'var(--radius-pill)', border: '1px solid var(--line)', cursor: 'pointer' }}>
+                <ChevronLeft size={14} /> Back
+              </button>
               {overQuota ? (
-                <Button variant="destructive" className="flex-1" disabled>Upgrade to generate more</Button>
+                <button disabled style={{ flex: 1, fontFamily: 'var(--font-body)', fontSize: 14, fontWeight: 600, background: 'var(--danger)', color: '#fff', padding: '11px 0', borderRadius: 'var(--radius-pill)', border: 'none', opacity: 0.6, cursor: 'not-allowed' }}>Upgrade to generate more</button>
               ) : (
-                <Button onClick={handleGenerate} disabled={!prompt.trim()} className="flex-1 gap-2">
-                  <Sparkles className="w-4 h-4" /> Generate →
-                </Button>
+                <button onClick={handleGenerate} disabled={!prompt.trim()}
+                  style={{ flex: 1, display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 6, fontFamily: 'var(--font-body)', fontSize: 14, fontWeight: 600, background: 'var(--accent)', color: '#fff', padding: '11px 0', borderRadius: 'var(--radius-pill)', border: 'none', cursor: 'pointer', boxShadow: 'var(--shadow-accent)', opacity: !prompt.trim() ? 0.5 : 1 }}>
+                  <Sparkles size={15} /> Generate →
+                </button>
               )}
             </div>
           </div>
@@ -259,18 +292,25 @@ export default function ArtifactNew() {
 
         {/* Step 3: Generating */}
         {step === 3 && (
-          <div className="text-center py-16 space-y-4">
-            <div className="w-16 h-16 rounded-full bg-primary/10 flex items-center justify-center mx-auto">
-              <Sparkles className="w-8 h-8 text-primary animate-pulse" />
+          <div style={{ textAlign: 'center', padding: '80px 0' }}>
+            <div style={{ width: 72, height: 72, borderRadius: '50%', background: 'rgba(242,92,42,0.1)', display: 'flex', alignItems: 'center', justifyContent: 'center', margin: '0 auto 24px' }}>
+              <Sparkles size={32} style={{ color: 'var(--accent)', animation: 'pulse 1.5s ease-in-out infinite' }} />
             </div>
-            <h2 className="text-xl font-semibold">Generating your artifact…</h2>
-            <p className="text-muted-foreground text-sm max-w-xs mx-auto">
+            <div style={{ fontFamily: 'var(--font-display)', fontSize: 28, color: 'var(--ink)', marginBottom: 12 }}>
+              Generating your <em style={{ fontStyle: 'italic', color: 'var(--accent)' }}>artifact…</em>
+            </div>
+            <p style={{ fontFamily: 'var(--font-body)', fontSize: 15, color: 'var(--ink-soft)', maxWidth: 360, margin: '0 auto 24px', lineHeight: 1.6 }}>
               Building a personalized pitch using your brand profile and knowledge assets. This takes about 15–30 seconds.
             </p>
-            <Loader2 className="w-6 h-6 animate-spin text-primary mx-auto mt-4" />
+            <Loader2 size={22} style={{ color: 'var(--accent)', animation: 'spin 0.8s linear infinite' }} />
           </div>
         )}
       </motion.div>
+
+      <style>{`
+        @keyframes spin { to { transform: rotate(360deg); } }
+        @keyframes pulse { 0%, 100% { opacity: 1; } 50% { opacity: 0.6; } }
+      `}</style>
     </div>
   );
 }

@@ -1,9 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import useCurrentUser from '@/lib/useCurrentUser';
 import { base44 } from '@/api/base44Client';
-import { Button } from '@/components/ui/button';
-import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Plus, FileText, Image, Video, Globe, Loader2, Trash2, BookOpen } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 
@@ -15,6 +12,13 @@ const TYPE_ICONS = {
   vimeo: Video,
   instagram: Globe,
   website_scrape: Globe,
+};
+
+const STATUS_STYLE = {
+  parsing:  { bg: 'rgba(242,92,42,0.1)',  color: 'var(--accent)',    label: 'Parsing' },
+  ready:    { bg: 'rgba(14,92,74,0.1)',   color: 'var(--secondary)', label: 'Ready' },
+  failed:   { bg: 'rgba(234,67,53,0.1)', color: 'var(--danger)',    label: 'Failed' },
+  archived: { bg: 'var(--canvas)',        color: 'var(--ink-muted)', label: 'Archived' },
 };
 
 export default function Knowledge() {
@@ -39,120 +43,140 @@ export default function Knowledge() {
     setLoading(false);
   };
 
-  if (loading) return <div className="text-muted-foreground">Loading...</div>;
+  if (loading) return (
+    <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', height: 200 }}>
+      <div style={{ width: 28, height: 28, border: '3px solid var(--line)', borderTop: '3px solid var(--accent)', borderRadius: '50%', animation: 'spin 0.8s linear infinite' }} />
+      <style>{`@keyframes spin { to { transform: rotate(360deg); } }`}</style>
+    </div>
+  );
+
+  const TABS = [
+    { id: 'assets', label: `Assets`, count: assets.length },
+    { id: 'brand', label: 'Brand Profile' },
+  ];
 
   return (
-    <div className="space-y-6">
-      <div>
-        <h1 className="text-3xl font-bold mb-1">Knowledge Base</h1>
-        <p className="text-muted-foreground">Manage your brand assets and brand profile.</p>
+    <div style={{ maxWidth: 900 }}>
+      {/* Tab pills */}
+      <div style={{ display: 'flex', gap: 8, marginBottom: 32 }}>
+        {TABS.map(t => (
+          <button key={t.id} onClick={() => setActiveTab(t.id)}
+            style={{
+              fontFamily: 'var(--font-body)', fontSize: 14, fontWeight: 500,
+              padding: '8px 20px', borderRadius: 'var(--radius-pill)',
+              border: '1px solid var(--line)',
+              background: activeTab === t.id ? 'var(--ink)' : 'transparent',
+              color: activeTab === t.id ? 'var(--canvas)' : 'var(--ink-soft)',
+              cursor: 'pointer', transition: 'all 150ms',
+            }}>
+            {t.label}{t.count !== undefined ? ` (${t.count})` : ''}
+          </button>
+        ))}
       </div>
 
-      <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
-        <TabsList className="grid w-full grid-cols-2">
-          <TabsTrigger value="assets">Assets ({assets.length})</TabsTrigger>
-          <TabsTrigger value="brand">Brand Profile</TabsTrigger>
-        </TabsList>
-
-        <TabsContent value="assets" className="space-y-4">
-          <div className="flex justify-between items-center">
-            <h2 className="text-lg font-semibold">Knowledge Assets</h2>
-            <Button size="sm">
-              <Plus className="w-4 h-4 mr-2" /> Add Content
-            </Button>
+      {activeTab === 'assets' && (
+        <div>
+          <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 20 }}>
+            <div style={{ fontFamily: 'var(--font-display)', fontSize: 22, color: 'var(--ink)' }}>
+              Knowledge <em style={{ fontStyle: 'italic', color: 'var(--accent)' }}>assets</em>
+            </div>
+            <button style={{ display: 'flex', alignItems: 'center', gap: 6, fontFamily: 'var(--font-body)', fontSize: 14, fontWeight: 600, background: 'var(--accent)', color: '#fff', padding: '8px 20px', borderRadius: 'var(--radius-pill)', border: 'none', cursor: 'pointer', boxShadow: 'var(--shadow-accent)' }}>
+              <Plus size={14} /> Add Content
+            </button>
           </div>
 
-          <div className="grid gap-3">
+          <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
             <AnimatePresence>
               {assets.map(asset => {
                 const Icon = TYPE_ICONS[asset.type] || FileText;
-                const statusColor = {
-                  parsing: 'bg-primary/10 text-primary',
-                  ready: 'bg-emerald-50 text-emerald-700',
-                  failed: 'bg-destructive/10 text-destructive',
-                  archived: 'bg-muted text-muted-foreground',
-                }[asset.status] || 'bg-muted text-muted-foreground';
-
+                const st = STATUS_STYLE[asset.status] || STATUS_STYLE.archived;
                 return (
-                  <motion.div
-                    key={asset.id}
-                    initial={{ opacity: 0, height: 0 }}
-                    animate={{ opacity: 1, height: 'auto' }}
-                    exit={{ opacity: 0, height: 0 }}
-                    className="flex items-center gap-4 p-4 bg-card border border-border rounded-lg hover:border-primary/30 transition-colors"
-                  >
-                    <div className="w-10 h-10 rounded-lg bg-muted flex items-center justify-center shrink-0">
-                      <Icon className="w-5 h-5 text-muted-foreground" />
+                  <motion.div key={asset.id}
+                    initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, height: 0 }}
+                    className="card-lift"
+                    style={{ background: 'var(--surface)', borderRadius: 'var(--radius-lg)', border: '1px solid var(--line)', padding: '16px 20px', display: 'flex', alignItems: 'center', gap: 16 }}>
+                    <div style={{ width: 40, height: 40, borderRadius: 10, background: 'var(--canvas)', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
+                      <Icon size={18} style={{ color: 'var(--ink-muted)' }} />
                     </div>
-                    <div className="flex-1 min-w-0">
-                      <p className="font-medium truncate">{asset.title}</p>
-                      <p className="text-xs text-muted-foreground">
-                        {asset.type} · {new Date(asset.created_at).toLocaleDateString()}
-                      </p>
+                    <div style={{ flex: 1, minWidth: 0 }}>
+                      <div style={{ fontFamily: 'var(--font-body)', fontSize: 14, fontWeight: 500, color: 'var(--ink)', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{asset.title}</div>
+                      <div style={{ fontFamily: 'var(--font-mono)', fontSize: 10, textTransform: 'uppercase', letterSpacing: '0.14em', color: 'var(--ink-muted)', marginTop: 3 }}>
+                        {asset.type} · {new Date(asset.created_date).toLocaleDateString()}
+                      </div>
                     </div>
-                    <div className={`px-2.5 py-1 rounded-full text-xs font-medium whitespace-nowrap ${statusColor}`}>
-                      {asset.status === 'parsing' && <Loader2 className="w-3 h-3 inline animate-spin mr-1" />}
-                      {asset.status.charAt(0).toUpperCase() + asset.status.slice(1)}
-                    </div>
-                    <Button variant="ghost" size="icon" className="shrink-0 text-muted-foreground hover:text-destructive">
-                      <Trash2 className="w-4 h-4" />
-                    </Button>
+                    <span style={{ fontFamily: 'var(--font-mono)', fontSize: 10, textTransform: 'uppercase', letterSpacing: '0.14em', background: st.bg, color: st.color, borderRadius: 'var(--radius-pill)', padding: '4px 10px', flexShrink: 0, display: 'flex', alignItems: 'center', gap: 4 }}>
+                      {asset.status === 'parsing' && <Loader2 size={10} style={{ animation: 'spin 0.8s linear infinite' }} />}
+                      {st.label}
+                    </span>
+                    <button style={{ background: 'none', border: 'none', cursor: 'pointer', padding: 6, borderRadius: 8, color: 'var(--ink-muted)', flexShrink: 0 }}
+                      onMouseEnter={e => e.currentTarget.style.color = 'var(--danger)'}
+                      onMouseLeave={e => e.currentTarget.style.color = 'var(--ink-muted)'}>
+                      <Trash2 size={14} />
+                    </button>
                   </motion.div>
                 );
               })}
             </AnimatePresence>
+
             {!assets.length && (
-              <Card className="border-dashed">
-                <CardContent className="pt-12 text-center">
-                  <div className="w-12 h-12 rounded-lg bg-muted flex items-center justify-center mx-auto mb-4">
-                    <BookOpen className="w-6 h-6 text-muted-foreground" />
-                  </div>
-                  <h3 className="font-semibold mb-1">No assets yet</h3>
-                  <p className="text-sm text-muted-foreground mb-4">Add PDFs, images, videos, or URLs to enrich your knowledge base.</p>
-                  <Button size="sm">
-                    <Plus className="w-4 h-4 mr-2" /> Add Content
-                  </Button>
-                </CardContent>
-              </Card>
+              <div style={{ textAlign: 'center', padding: '80px 24px', background: 'var(--surface)', borderRadius: 'var(--radius-xl)', border: '1px dashed var(--line)' }}>
+                <div style={{ width: 56, height: 56, borderRadius: 14, background: 'var(--canvas)', display: 'flex', alignItems: 'center', justifyContent: 'center', margin: '0 auto 16px' }}>
+                  <BookOpen size={24} style={{ color: 'var(--ink-muted)' }} />
+                </div>
+                <div style={{ fontFamily: 'var(--font-display)', fontStyle: 'italic', fontSize: 22, color: 'var(--ink)', marginBottom: 8 }}>No assets yet</div>
+                <p style={{ fontFamily: 'var(--font-body)', fontSize: 14, color: 'var(--ink-soft)', marginBottom: 20, maxWidth: 360, margin: '0 auto 20px' }}>Add PDFs, images, videos, or URLs to enrich your knowledge base.</p>
+                <button style={{ display: 'inline-flex', alignItems: 'center', gap: 6, fontFamily: 'var(--font-body)', fontSize: 14, fontWeight: 600, background: 'var(--accent)', color: '#fff', padding: '10px 24px', borderRadius: 'var(--radius-pill)', border: 'none', cursor: 'pointer', boxShadow: 'var(--shadow-accent)' }}>
+                  <Plus size={14} /> Add Content
+                </button>
+              </div>
             )}
           </div>
-        </TabsContent>
+        </div>
+      )}
 
-        <TabsContent value="brand" className="space-y-4">
-          <h2 className="text-lg font-semibold">Brand Profile</h2>
+      {activeTab === 'brand' && (
+        <div>
+          <div style={{ fontFamily: 'var(--font-display)', fontSize: 22, color: 'var(--ink)', marginBottom: 20 }}>
+            Brand <em style={{ fontStyle: 'italic', color: 'var(--accent)' }}>profile</em>
+          </div>
           {brandProfile ? (
-            <div className="grid sm:grid-cols-2 gap-4 space-y-4">
-              <Card>
-                <CardHeader>
-                  <CardTitle className="text-base">Voice & Tone</CardTitle>
-                </CardHeader>
-                <CardContent>
-                  <p className="text-sm text-muted-foreground italic">"{brandProfile.voice_tone || 'Not set'}"</p>
-                </CardContent>
-              </Card>
-              {/* Value Propositions, Services, etc. — abbreviated for now */}
-              <Card>
-                <CardHeader>
-                  <CardTitle className="text-base">Value Propositions</CardTitle>
-                </CardHeader>
-                <CardContent>
-                  <ul className="space-y-1">
-                    {(brandProfile.value_propositions || []).map((vp, i) => (
-                      <li key={i} className="text-sm">• {vp}</li>
+            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 16 }} className="brand-grid">
+              {[
+                { label: 'Voice & Tone', value: brandProfile.voice_tone ? `"${brandProfile.voice_tone}"` : 'Not set', italic: true },
+                { label: 'Target Audience', value: brandProfile.target_audience_description || 'Not set' },
+              ].map(card => (
+                <div key={card.label} style={{ background: 'var(--surface)', borderRadius: 'var(--radius-lg)', padding: '24px', border: '1px solid var(--line)' }}>
+                  <div style={{ fontFamily: 'var(--font-mono)', fontSize: 10, textTransform: 'uppercase', letterSpacing: '0.18em', color: 'var(--ink-muted)', marginBottom: 10 }}>{card.label}</div>
+                  <p style={{ fontFamily: card.italic ? 'var(--font-display)' : 'var(--font-body)', fontStyle: card.italic ? 'italic' : 'normal', fontSize: 15, color: 'var(--ink-soft)', margin: 0 }}>{card.value}</p>
+                </div>
+              ))}
+              {(brandProfile.value_propositions || []).length > 0 && (
+                <div style={{ background: 'var(--surface)', borderRadius: 'var(--radius-lg)', padding: '24px', border: '1px solid var(--line)', gridColumn: '1 / -1' }}>
+                  <div style={{ fontFamily: 'var(--font-mono)', fontSize: 10, textTransform: 'uppercase', letterSpacing: '0.18em', color: 'var(--ink-muted)', marginBottom: 12 }}>Value Propositions</div>
+                  <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
+                    {brandProfile.value_propositions.map((vp, i) => (
+                      <div key={i} style={{ display: 'flex', alignItems: 'flex-start', gap: 10 }}>
+                        <span style={{ width: 20, height: 20, borderRadius: '50%', background: 'var(--canvas)', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0, fontFamily: 'var(--font-mono)', fontSize: 10, color: 'var(--accent)' }}>{i + 1}</span>
+                        <span style={{ fontFamily: 'var(--font-body)', fontSize: 14, color: 'var(--ink-soft)' }}>{vp}</span>
+                      </div>
                     ))}
-                  </ul>
-                </CardContent>
-              </Card>
+                  </div>
+                </div>
+              )}
             </div>
           ) : (
-            <Card className="border-dashed">
-              <CardContent className="pt-12 text-center">
-                <p className="text-muted-foreground">Your brand profile will appear here after onboarding.</p>
-              </CardContent>
-            </Card>
+            <div style={{ textAlign: 'center', padding: '80px 24px', background: 'var(--surface)', borderRadius: 'var(--radius-xl)', border: '1px dashed var(--line)' }}>
+              <div style={{ fontFamily: 'var(--font-display)', fontStyle: 'italic', fontSize: 22, color: 'var(--ink)', marginBottom: 8 }}>No brand profile yet</div>
+              <p style={{ fontFamily: 'var(--font-body)', fontSize: 14, color: 'var(--ink-soft)', margin: 0 }}>Your brand profile will appear here after completing onboarding.</p>
+            </div>
           )}
-        </TabsContent>
-      </Tabs>
+        </div>
+      )}
+
+      <style>{`
+        @keyframes spin { to { transform: rotate(360deg); } }
+        @media (max-width: 640px) { .brand-grid { grid-template-columns: 1fr !important; } }
+      `}</style>
     </div>
   );
 }
