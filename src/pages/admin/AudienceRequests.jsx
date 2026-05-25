@@ -29,9 +29,9 @@ export default function AudienceRequests() {
 
   const loadData = async () => {
     const [reqs, clientList, planList] = await Promise.all([
-      base44.asServiceRole.entities.AudienceRequest.list('-created_date', 200),
-      base44.asServiceRole.entities.Client.list(),
-      base44.asServiceRole.entities.Plan.list(),
+      base44.entities.AudienceRequest.list('-created_date', 200),
+      base44.entities.Client.list(),
+      base44.entities.Plan.list(),
     ]);
     const cm = {};
     clientList.forEach(c => { cm[c.id] = c; });
