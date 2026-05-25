@@ -10,6 +10,17 @@ import Step4BrandReview from '@/components/onboarding/Step4BrandReview';
 import Step5Plan from '@/components/onboarding/Step5Plan';
 import { motion } from 'framer-motion';
 
+function PitchlaneLogo() {
+  return (
+    <div style={{ display: 'flex', alignItems: 'center', gap: 10, justifyContent: 'center', marginBottom: 40 }}>
+      <div style={{ width: 32, height: 32, borderRadius: 8, background: 'var(--accent)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+        <span style={{ fontFamily: 'var(--font-display)', fontStyle: 'italic', color: '#fff', fontSize: 18, lineHeight: 1 }}>P</span>
+      </div>
+      <span style={{ fontFamily: 'var(--font-display)', fontSize: 22, color: 'var(--ink)', lineHeight: 1 }}>Pitchlane</span>
+    </div>
+  );
+}
+
 export default function Onboarding() {
   const { user } = useAuth();
   const navigate = useNavigate();
@@ -24,16 +35,13 @@ export default function Onboarding() {
     bootstrap();
   }, [user?.id]);
 
-  // Bootstrap: find or create Client + OnboardingProgress for this user
   const bootstrap = async () => {
     setBootstrapping(true);
 
-    // Find existing client owned by this user
     let clients = await base44.entities.Client.filter({ owner_user_id: user.id });
     let client;
 
     if (!clients.length) {
-      // Create a new client stub
       client = await base44.entities.Client.create({
         name: user.full_name || 'My Firm',
         slug: `client-${user.id.slice(0, 8)}`,
@@ -48,7 +56,6 @@ export default function Onboarding() {
 
     setClientId(client.id);
 
-    // Find or create OnboardingProgress
     let progresses = await base44.entities.OnboardingProgress.filter({ client_id: client.id });
     let progress;
 
@@ -62,7 +69,6 @@ export default function Onboarding() {
       progress = progresses[0];
     }
 
-    // If already completed, go to dashboard
     if (progress.completed) {
       navigate('/app');
       return;
@@ -79,11 +85,7 @@ export default function Onboarding() {
   };
 
   const handleStep1 = async (formData) => {
-    await base44.entities.OnboardingProgress.update(onboardingProgress.id, {
-      step: 2,
-      step_1_company_data: formData,
-    });
-    // Also update client name from company data
+    await base44.entities.OnboardingProgress.update(onboardingProgress.id, { step: 2, step_1_company_data: formData });
     if (formData.business_name) {
       await base44.entities.Client.update(clientId, {
         name: formData.business_name,
@@ -98,28 +100,19 @@ export default function Onboarding() {
   };
 
   const handleStep2 = async (scrapeResult) => {
-    await base44.entities.OnboardingProgress.update(onboardingProgress.id, {
-      step: 3,
-      step_2_scrape_data: scrapeResult || {},
-    });
+    await base44.entities.OnboardingProgress.update(onboardingProgress.id, { step: 3, step_2_scrape_data: scrapeResult || {} });
     setData({ ...data, step_2_scrape_data: scrapeResult });
     setStep(3);
   };
 
   const handleStep3 = async (assets) => {
-    await base44.entities.OnboardingProgress.update(onboardingProgress.id, {
-      step: 4,
-      step_3_uploads: { asset_ids: assets.map(a => a.id) },
-    });
+    await base44.entities.OnboardingProgress.update(onboardingProgress.id, { step: 4, step_3_uploads: { asset_ids: assets.map(a => a.id) } });
     setData({ ...data, step_3_uploads: assets });
     setStep(4);
   };
 
   const handleStep4 = async (brandProfile) => {
-    await base44.entities.OnboardingProgress.update(onboardingProgress.id, {
-      step: 5,
-      step_4_brand_review: brandProfile,
-    });
+    await base44.entities.OnboardingProgress.update(onboardingProgress.id, { step: 5, step_4_brand_review: brandProfile });
     setStep(5);
   };
 
@@ -129,36 +122,44 @@ export default function Onboarding() {
 
   if (bootstrapping || !user) {
     return (
-      <div className="min-h-screen flex items-center justify-center">
-        <div className="w-8 h-8 border-4 border-slate-200 border-t-slate-800 rounded-full animate-spin" />
+      <div style={{ minHeight: '100vh', display: 'flex', alignItems: 'center', justifyContent: 'center', background: 'var(--canvas)' }}>
+        <div style={{ width: 32, height: 32, border: '3px solid var(--line)', borderTop: '3px solid var(--accent)', borderRadius: '50%', animation: 'spin 0.8s linear infinite' }} />
+        <style>{`@keyframes spin { to { transform: rotate(360deg); } }`}</style>
       </div>
     );
   }
 
   return (
-    <div className="min-h-screen bg-background py-8 px-4 sm:py-12">
-      <div className="max-w-2xl mx-auto">
+    <div style={{ minHeight: '100vh', background: 'var(--canvas)', padding: '40px 24px 80px' }}>
+      <div style={{ maxWidth: 720, margin: '0 auto' }}>
+        <PitchlaneLogo />
         <StepIndicator current={step} />
-
         <motion.div
           key={step}
-          initial={{ opacity: 0 }}
-          animate={{ opacity: 1 }}
+          initial={{ opacity: 0, y: 16 }}
+          animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.3 }}
         >
-          {step === 1 && <Step1Company data={data.step_1_company_data} onNext={handleStep1} />}
-          {step === 2 && (
-            <Step2Scrape
-              websiteUrl={data.step_1_company_data?.website_url}
-              clientId={clientId}
-              onNext={handleStep2}
-            />
-          )}
-          {step === 3 && <Step3Upload clientId={clientId} onNext={handleStep3} />}
-          {step === 4 && <Step4BrandReview clientId={clientId} onNext={handleStep4} />}
-          {step === 5 && <Step5Plan clientId={clientId} onComplete={handleComplete} />}
+          <div style={{ background: 'var(--surface)', borderRadius: 24, padding: '56px 64px', boxShadow: 'var(--shadow-md)', border: '1px solid var(--line)' }} className="onboarding-card">
+            {step === 1 && <Step1Company data={data.step_1_company_data} onNext={handleStep1} />}
+            {step === 2 && (
+              <Step2Scrape
+                websiteUrl={data.step_1_company_data?.website_url}
+                clientId={clientId}
+                onNext={handleStep2}
+              />
+            )}
+            {step === 3 && <Step3Upload clientId={clientId} onNext={handleStep3} />}
+            {step === 4 && <Step4BrandReview clientId={clientId} onNext={handleStep4} />}
+            {step === 5 && <Step5Plan clientId={clientId} onComplete={handleComplete} />}
+          </div>
         </motion.div>
       </div>
+      <style>{`
+        @media (max-width: 640px) {
+          .onboarding-card { padding: 32px 24px !important; border-radius: 16px !important; }
+        }
+      `}</style>
     </div>
   );
 }

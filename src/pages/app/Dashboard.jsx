@@ -2,12 +2,46 @@ import React, { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import useCurrentUser from '@/lib/useCurrentUser';
 import { base44 } from '@/api/base44Client';
-import { Button } from '@/components/ui/button';
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
-import { Progress } from '@/components/ui/progress';
-import { Badge } from '@/components/ui/badge';
-import { ArrowRight, FileText, RotateCw, Zap, Sparkles, BookOpen, Users } from 'lucide-react';
-import { motion } from 'framer-motion';
+import { FileText, TrendingUp, Mail, CreditCard, Sparkles, ArrowRight } from 'lucide-react';
+
+function KPICard({ label, value, subtitle, trend, trendColor, icon: Icon, iconColor }) {
+  return (
+    <div className="card-lift" style={{ background: 'var(--surface)', borderRadius: 16, padding: 24, border: '1px solid var(--line)', cursor: 'default' }}>
+      <div style={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', marginBottom: 12 }}>
+        <div style={{ width: 36, height: 36, borderRadius: 10, background: 'var(--canvas)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+          <Icon size={16} style={{ color: iconColor || 'var(--accent)' }} />
+        </div>
+        {trend && (
+          <span style={{ fontFamily: 'var(--font-mono)', fontSize: 10, textTransform: 'uppercase', letterSpacing: '0.16em', background: 'var(--canvas)', color: trendColor || 'var(--secondary)', borderRadius: 'var(--radius-pill)', padding: '3px 8px' }}>
+            {trend}
+          </span>
+        )}
+      </div>
+      <div style={{ fontFamily: 'var(--font-mono)', fontSize: 10, textTransform: 'uppercase', letterSpacing: '0.18em', color: 'var(--ink-muted)', marginBottom: 4 }}>{label}</div>
+      <div style={{ display: 'flex', alignItems: 'baseline', gap: 8 }}>
+        <span style={{ fontFamily: 'var(--font-display)', fontSize: 40, color: 'var(--ink)', lineHeight: 1 }}>{value}</span>
+        {subtitle && <span style={{ fontFamily: 'var(--font-body)', fontSize: 12, color: 'var(--ink-muted)' }}>{subtitle}</span>}
+      </div>
+    </div>
+  );
+}
+
+function QuickActionCard({ to, icon: Icon, title, description }) {
+  return (
+    <Link to={to} style={{ textDecoration: 'none', display: 'block' }}>
+      <div className="card-lift group" style={{ background: 'var(--surface)', borderRadius: 16, padding: 24, border: '1px solid var(--line)', height: '100%', cursor: 'pointer' }}>
+        <div style={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', marginBottom: 16 }}>
+          <div style={{ width: 40, height: 40, borderRadius: 10, background: 'var(--canvas)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+            <Icon size={18} style={{ color: 'var(--accent)' }} />
+          </div>
+          <ArrowRight size={16} style={{ color: 'var(--ink-muted)', marginTop: 4 }} />
+        </div>
+        <div style={{ fontFamily: 'var(--font-display)', fontSize: 20, color: 'var(--ink)', marginBottom: 6 }}>{title}</div>
+        <div style={{ fontFamily: 'var(--font-body)', fontSize: 14, color: 'var(--ink-soft)', lineHeight: 1.55 }}>{description}</div>
+      </div>
+    </Link>
+  );
+}
 
 export default function Dashboard() {
   const { user, clientId } = useCurrentUser();
@@ -30,116 +64,103 @@ export default function Dashboard() {
     setLoading(false);
   };
 
-  if (loading) return <div className="text-muted-foreground">Loading...</div>;
+  if (loading) {
+    return (
+      <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', height: 200 }}>
+        <div style={{ width: 32, height: 32, border: '3px solid var(--line)', borderTop: '3px solid var(--accent)', borderRadius: '50%', animation: 'spin 0.8s linear infinite' }} />
+        <style>{`@keyframes spin { to { transform: rotate(360deg); } }`}</style>
+      </div>
+    );
+  }
 
-  const artifactUsagePercent = plan ? (client?.artifacts_used_this_period || 0) / plan.artifact_quota * 100 : 0;
+  const artifactsUsed = client?.artifacts_used_this_period || 0;
+  const artifactQuota = plan?.artifact_quota || 0;
+  const creditsBalance = client?.credits_balance || 0;
 
   return (
-    <div className="space-y-8">
-      {/* Header */}
-      <div>
-        <h1 className="text-3xl font-bold mb-2">Welcome back, {user?.full_name?.split(' ')[0]}!</h1>
-        <p className="text-muted-foreground">You're on the <span className="font-semibold text-foreground">{plan?.name}</span> plan.</p>
-      </div>
-
-      {/* KPIs */}
-      <div className="grid sm:grid-cols-2 lg:grid-cols-4 gap-4">
+    <div style={{ maxWidth: 1100 }}>
+      {/* KPI Grid */}
+      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: 16, marginBottom: 32 }} className="kpi-grid">
         <KPICard
-          label="Artifacts Used"
-          value={`${client?.artifacts_used_this_period || 0} / ${plan?.artifact_quota || 0}`}
+          label="Artifacts this month"
+          value={artifactsUsed}
+          subtitle={artifactQuota ? `/ ${artifactQuota} quota` : ''}
+          trend="+0 today"
+          trendColor="var(--secondary)"
           icon={FileText}
-          progress={artifactUsagePercent}
+          iconColor="var(--accent)"
         />
         <KPICard
-          label="Revisions Pool"
-          value={plan?.revisions_per_artifact || 0}
-          sublabel="per artifact"
-          icon={RotateCw}
+          label="Hot leads"
+          value="0"
+          subtitle="last 7 days"
+          trend="+0 today"
+          trendColor="var(--secondary)"
+          icon={TrendingUp}
+          iconColor="var(--secondary)"
         />
         <KPICard
-          label="Credits Balance"
-          value={client?.credits_balance || 0}
-          icon={Zap}
+          label="Reply rate"
+          value="—"
+          subtitle="across 0 sends"
+          icon={Mail}
+          iconColor="var(--ink-soft)"
         />
         <KPICard
-          label="Team Members"
-          value="1"
-          sublabel="of 1"
-          icon={Users}
+          label="Credits remaining"
+          value={creditsBalance.toLocaleString()}
+          subtitle="available"
+          trend={plan ? `Renews 30d` : 'Trial'}
+          trendColor="var(--ink-muted)"
+          icon={CreditCard}
+          iconColor="var(--ink-soft)"
         />
       </div>
 
-      {/* CTAs */}
-      <div className="grid sm:grid-cols-2 gap-4">
-        <motion.div whileHover={{ y: -2 }} className="group">
-          <Link to="/app/artifacts/new">
-            <Card className="cursor-pointer border-2 border-primary/20 hover:border-primary/40 transition-colors h-full">
-              <CardContent className="pt-6">
-                <div className="flex items-start justify-between mb-4">
-                  <div className="w-10 h-10 rounded-lg bg-primary/10 flex items-center justify-center">
-                    <Sparkles className="w-5 h-5 text-primary" />
-                  </div>
-                  <ArrowRight className="w-4 h-4 text-muted-foreground group-hover:text-primary transition-colors" />
-                </div>
-                <h3 className="font-semibold mb-1">Generate your first artifact</h3>
-                <p className="text-sm text-muted-foreground">Create a hyper-personalized pitch for a prospect.</p>
-              </CardContent>
-            </Card>
-          </Link>
-        </motion.div>
-
-        <motion.div whileHover={{ y: -2 }} className="group">
-          <Link to="/app/knowledge">
-            <Card className="cursor-pointer border border-border hover:border-primary/40 transition-colors h-full">
-              <CardContent className="pt-6">
-                <div className="flex items-start justify-between mb-4">
-                  <div className="w-10 h-10 rounded-lg bg-muted flex items-center justify-center">
-                    <BookOpen className="w-5 h-5 text-muted-foreground" />
-                  </div>
-                  <ArrowRight className="w-4 h-4 text-muted-foreground group-hover:text-primary transition-colors" />
-                </div>
-                <h3 className="font-semibold mb-1">Expand your knowledge base</h3>
-                <p className="text-sm text-muted-foreground">Add more content to improve artifact quality.</p>
-              </CardContent>
-            </Card>
-          </Link>
-        </motion.div>
-      </div>
-
-      {/* Recent Activity */}
-      <Card>
-        <CardHeader>
-          <CardTitle>Recent Activity</CardTitle>
-          <CardDescription>Nothing yet — generate your first artifact to get started.</CardDescription>
-        </CardHeader>
-        <CardContent>
-          <div className="text-center py-8 text-muted-foreground">
-            <p>Check back here once you start building.</p>
-          </div>
-        </CardContent>
-      </Card>
-    </div>
-  );
-}
-
-function KPICard({ label, value, sublabel, icon: Icon, progress }) {
-  return (
-    <Card>
-      <CardContent className="pt-6">
-        <div className="flex items-start justify-between mb-4">
+      {/* Plan card */}
+      {plan && (
+        <div style={{ background: 'var(--surface)', borderRadius: 16, padding: '20px 24px', border: '1px solid var(--line)', marginBottom: 32, display: 'flex', alignItems: 'center', justifyContent: 'space-between', flexWrap: 'wrap', gap: 16 }}>
           <div>
-            <p className="text-xs font-medium text-muted-foreground uppercase tracking-wider">{label}</p>
-            <p className="text-2xl font-bold mt-1">{value}</p>
-            {sublabel && <p className="text-xs text-muted-foreground mt-1">{sublabel}</p>}
+            <div style={{ fontFamily: 'var(--font-mono)', fontSize: 10, textTransform: 'uppercase', letterSpacing: '0.18em', color: 'var(--ink-muted)', marginBottom: 4 }}>Current plan</div>
+            <div style={{ fontFamily: 'var(--font-display)', fontSize: 24, color: 'var(--ink)' }}>
+              {plan.name} <em style={{ fontStyle: 'italic', color: 'var(--accent)' }}>plan</em>
+            </div>
           </div>
-          <div className="w-9 h-9 rounded-lg bg-muted flex items-center justify-center">
-            <Icon className="w-4.5 h-4.5 text-muted-foreground" />
+          <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
+            <div style={{ textAlign: 'right' }}>
+              <div style={{ fontFamily: 'var(--font-mono)', fontSize: 10, textTransform: 'uppercase', letterSpacing: '0.16em', color: 'var(--ink-muted)' }}>Artifacts used</div>
+              <div style={{ fontFamily: 'var(--font-body)', fontSize: 14, fontWeight: 500, color: 'var(--ink)' }}>{artifactsUsed} / {artifactQuota}</div>
+            </div>
+            <div style={{ width: 80, height: 6, background: 'var(--canvas)', borderRadius: 3, overflow: 'hidden' }}>
+              <div style={{ height: '100%', width: `${artifactQuota ? Math.min(100, (artifactsUsed / artifactQuota) * 100) : 0}%`, background: 'var(--accent)', borderRadius: 3, transition: 'width 600ms ease' }} />
+            </div>
           </div>
         </div>
-        {progress !== undefined && (
-          <Progress value={Math.min(progress, 100)} className="h-1.5" />
-        )}
-      </CardContent>
-    </Card>
+      )}
+
+      {/* Quick actions */}
+      <div style={{ marginBottom: 8 }}>
+        <div style={{ fontFamily: 'var(--font-mono)', fontSize: 10, textTransform: 'uppercase', letterSpacing: '0.2em', color: 'var(--ink-muted)', marginBottom: 16 }}>Quick actions</div>
+        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(2, 1fr)', gap: 16 }} className="actions-grid">
+          <QuickActionCard
+            to="/app/artifacts/new"
+            icon={Sparkles}
+            title="Generate a new artifact"
+            description="Create a hyper-personalized pitch for a prospect using your brand profile and AI."
+          />
+          <QuickActionCard
+            to="/app/prospects/request"
+            icon={TrendingUp}
+            title="Request an audience"
+            description="Specify niche, geography, and intent signals. We deliver enriched prospects."
+          />
+        </div>
+      </div>
+
+      <style>{`
+        @media (max-width: 900px) { .kpi-grid { grid-template-columns: repeat(2, 1fr) !important; } }
+        @media (max-width: 500px) { .kpi-grid { grid-template-columns: 1fr !important; } .actions-grid { grid-template-columns: 1fr !important; } }
+      `}</style>
+    </div>
   );
 }

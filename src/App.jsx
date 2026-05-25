@@ -39,6 +39,7 @@ import EmailDeliverability from './pages/admin/EmailDeliverability';
 import BillingHealth from './pages/admin/BillingHealth';
 import AuditLog from './pages/admin/AuditLog';
 import ArtifactViewer from './pages/public/ArtifactViewer';
+import Home from './pages/Home';
 
 const AuthenticatedApp = () => {
   const { isLoadingAuth, isLoadingPublicSettings, authError, navigateToLogin } = useAuth();
@@ -62,7 +63,7 @@ const AuthenticatedApp = () => {
 
   return (
     <Routes>
-      <Route path="/" element={<Navigate to="/app/onboarding" replace />} />
+      <Route path="/" element={<Home />} />
       <Route path="/app/onboarding" element={<Onboarding />} />
 
       {/* Public artifact viewer — no auth required */}

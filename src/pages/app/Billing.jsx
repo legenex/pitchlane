@@ -2,14 +2,9 @@ import React, { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import useCurrentUser from '@/lib/useCurrentUser';
 import { base44 } from '@/api/base44Client';
-import { Button } from '@/components/ui/button';
-import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
-import { Badge } from '@/components/ui/badge';
-import { Progress } from '@/components/ui/progress';
-import { Separator } from '@/components/ui/separator';
 import { createCheckoutSession } from '@/functions/createCheckoutSession';
 import { useToast } from '@/components/ui/use-toast';
-import { CreditCard, Zap, FileText, AlertTriangle, ExternalLink, RefreshCw } from 'lucide-react';
+import { CreditCard, Zap, FileText, AlertTriangle, ExternalLink, RefreshCw, Check } from 'lucide-react';
 import { format } from 'date-fns';
 
 const CREDIT_PACKS = [
@@ -66,9 +61,7 @@ export default function Billing() {
         success_url: `${window.location.origin}/app/billing/checkout/success?credits=${pack.credits}`,
         cancel_url: `${window.location.origin}/app/billing/checkout/cancel`,
       });
-      if (res.data?.url) {
-        window.location.href = res.data.url;
-      }
+      if (res.data?.url) window.location.href = res.data.url;
     } catch (e) {
       toast({ title: 'Error', description: e.message, variant: 'destructive' });
     }
@@ -95,180 +88,191 @@ export default function Billing() {
   const periodEnd = subscription?.current_period_end ? new Date(subscription.current_period_end) : null;
   const daysLeft = periodEnd ? Math.max(0, Math.ceil((periodEnd - new Date()) / 86400000)) : null;
 
-  if (loading) return <div className="text-muted-foreground text-sm">Loading billing...</div>;
+  if (loading) {
+    return (
+      <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', height: 200 }}>
+        <div style={{ width: 28, height: 28, border: '3px solid var(--line)', borderTop: '3px solid var(--accent)', borderRadius: '50%', animation: 'spin 0.8s linear infinite' }} />
+        <style>{`@keyframes spin { to { transform: rotate(360deg); } }`}</style>
+      </div>
+    );
+  }
 
   return (
-    <div className="space-y-8 max-w-3xl">
-      <div>
-        <h1 className="text-3xl font-bold mb-1">Billing</h1>
-        <p className="text-muted-foreground">Manage your subscription, credits, and invoices.</p>
+    <div style={{ maxWidth: 760 }}>
+      {/* Current Plan */}
+      <div style={{ background: 'var(--surface)', borderRadius: 16, padding: 28, border: '1px solid var(--line)', marginBottom: 20 }}>
+        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 20, flexWrap: 'wrap', gap: 12 }}>
+          <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
+            <div style={{ width: 36, height: 36, borderRadius: 10, background: 'var(--canvas)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+              <CreditCard size={16} style={{ color: 'var(--accent)' }} />
+            </div>
+            <span style={{ fontFamily: 'var(--font-mono)', fontSize: 10, textTransform: 'uppercase', letterSpacing: '0.18em', color: 'var(--ink-muted)' }}>Current Plan</span>
+          </div>
+          {subscription && (
+            <span style={{
+              fontFamily: 'var(--font-mono)', fontSize: 10, textTransform: 'uppercase', letterSpacing: '0.14em',
+              background: subscription.status === 'active' ? 'rgba(14,92,74,0.1)' : subscription.status === 'past_due' ? 'rgba(234,67,53,0.1)' : 'var(--canvas)',
+              color: subscription.status === 'active' ? 'var(--secondary)' : subscription.status === 'past_due' ? 'var(--danger)' : 'var(--ink-muted)',
+              borderRadius: 'var(--radius-pill)', padding: '4px 12px'
+            }}>
+              {subscription.status}
+            </span>
+          )}
+        </div>
+        <div style={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', flexWrap: 'wrap', gap: 16 }}>
+          <div>
+            <div style={{ fontFamily: 'var(--font-display)', fontSize: 32, color: 'var(--ink)', marginBottom: 4 }}>
+              {plan?.name || 'Trial'}
+            </div>
+            <div style={{ fontFamily: 'var(--font-body)', fontSize: 14, color: 'var(--ink-muted)' }}>${(plan?.monthly_price || 0) / 100}/month</div>
+          </div>
+          {(!plan || plan.monthly_price === 0) && (
+            <button onClick={handleUpgrade}
+              style={{ fontFamily: 'var(--font-body)', fontSize: 14, fontWeight: 600, background: 'var(--accent)', color: '#fff', padding: '10px 24px', borderRadius: 'var(--radius-pill)', border: 'none', cursor: 'pointer', boxShadow: 'var(--shadow-accent)', transition: 'transform 200ms' }}
+              onMouseEnter={e => e.currentTarget.style.transform = 'translateY(-1px)'}
+              onMouseLeave={e => e.currentTarget.style.transform = 'translateY(0)'}>
+              Upgrade Plan
+            </button>
+          )}
+        </div>
+        {subscription?.payment_method_brand && (
+          <div style={{ marginTop: 16, padding: '12px 16px', background: 'var(--canvas)', borderRadius: 10, display: 'flex', alignItems: 'center', gap: 8 }}>
+            <CreditCard size={14} style={{ color: 'var(--ink-muted)' }} />
+            <span style={{ fontFamily: 'var(--font-body)', fontSize: 13, color: 'var(--ink-soft)', textTransform: 'capitalize' }}>
+              {subscription.payment_method_brand} ending in {subscription.payment_method_last4}
+            </span>
+          </div>
+        )}
+        {subscription?.cancel_at_period_end && (
+          <div style={{ marginTop: 12, padding: '10px 14px', background: 'rgba(234,67,53,0.08)', borderRadius: 10, display: 'flex', alignItems: 'center', gap: 8 }}>
+            <AlertTriangle size={14} style={{ color: 'var(--danger)' }} />
+            <span style={{ fontFamily: 'var(--font-body)', fontSize: 13, color: 'var(--danger)' }}>
+              Subscription cancels on {periodEnd ? format(periodEnd, 'MMM d, yyyy') : '—'}
+            </span>
+          </div>
+        )}
+        {periodEnd && !subscription?.cancel_at_period_end && (
+          <div style={{ marginTop: 12, fontFamily: 'var(--font-mono)', fontSize: 10, textTransform: 'uppercase', letterSpacing: '0.14em', color: 'var(--ink-muted)' }}>
+            Renews {format(periodEnd, 'MMM d, yyyy')} · {daysLeft} days remaining
+          </div>
+        )}
       </div>
 
-      {/* Current Plan */}
-      <Card>
-        <CardHeader className="pb-3">
-          <div className="flex items-center justify-between">
-            <CardTitle className="text-base flex items-center gap-2">
-              <CreditCard className="w-4 h-4" /> Current Plan
-            </CardTitle>
-            {subscription && (
-              <Badge variant={subscription.status === 'active' ? 'default' : subscription.status === 'past_due' ? 'destructive' : 'secondary'}>
-                {subscription.status}
-              </Badge>
-            )}
+      {/* Usage & Credits */}
+      <div style={{ background: 'var(--surface)', borderRadius: 16, padding: 28, border: '1px solid var(--line)', marginBottom: 20 }}>
+        <div style={{ display: 'flex', alignItems: 'center', gap: 10, marginBottom: 20 }}>
+          <div style={{ width: 36, height: 36, borderRadius: 10, background: 'var(--canvas)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+            <Zap size={16} style={{ color: 'var(--accent)' }} />
           </div>
-        </CardHeader>
-        <CardContent className="space-y-4">
-          <div className="flex items-start justify-between">
-            <div>
-              <p className="text-2xl font-bold">{plan?.name || 'Trial'}</p>
-              <p className="text-muted-foreground text-sm">${(plan?.monthly_price || 0) / 100}/month</p>
+          <span style={{ fontFamily: 'var(--font-mono)', fontSize: 10, textTransform: 'uppercase', letterSpacing: '0.18em', color: 'var(--ink-muted)' }}>Usage & Credits</span>
+        </div>
+
+        {artifactQuota > 0 && (
+          <div style={{ marginBottom: 20 }}>
+            <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: 8 }}>
+              <span style={{ fontFamily: 'var(--font-body)', fontSize: 13, color: 'var(--ink-soft)' }}>Artifacts used this period</span>
+              <span style={{ fontFamily: 'var(--font-mono)', fontSize: 12, color: 'var(--ink)' }}>{artifactsUsed} / {artifactQuota}</span>
             </div>
-            {(!plan || plan.monthly_price === 0) && (
-              <Button onClick={handleUpgrade}>Upgrade Plan</Button>
-            )}
+            <div style={{ height: 6, background: 'var(--canvas)', borderRadius: 3, overflow: 'hidden' }}>
+              <div style={{ height: '100%', width: `${Math.min(100, (artifactsUsed / artifactQuota) * 100)}%`, background: 'var(--accent)', borderRadius: 3, transition: 'width 600ms ease' }} />
+            </div>
           </div>
+        )}
 
-          {subscription?.payment_method_brand && (
-            <div className="flex items-center justify-between p-3 bg-muted/50 rounded-lg">
-              <div className="flex items-center gap-2">
-                <CreditCard className="w-4 h-4 text-muted-foreground" />
-                <span className="text-sm capitalize">{subscription.payment_method_brand} ending in {subscription.payment_method_last4}</span>
-              </div>
-            </div>
-          )}
-
-          {subscription?.cancel_at_period_end && (
-            <div className="flex items-center gap-2 p-3 bg-destructive/10 text-destructive rounded-lg text-sm">
-              <AlertTriangle className="w-4 h-4" />
-              Subscription cancels on {periodEnd ? format(periodEnd, 'MMM d, yyyy') : '—'}
-            </div>
-          )}
-
-          {periodEnd && !subscription?.cancel_at_period_end && (
-            <p className="text-xs text-muted-foreground">
-              Renews {format(periodEnd, 'MMM d, yyyy')} · {daysLeft} days remaining
-            </p>
-          )}
-        </CardContent>
-      </Card>
-
-      {/* Usage */}
-      <Card>
-        <CardHeader className="pb-3">
-          <CardTitle className="text-base flex items-center gap-2">
-            <Zap className="w-4 h-4" /> Usage & Credits
-          </CardTitle>
-        </CardHeader>
-        <CardContent className="space-y-5">
+        <div style={{ borderTop: '1px solid var(--line-soft)', paddingTop: 20, display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
           <div>
-            <div className="flex justify-between text-sm mb-2">
-              <span>Artifacts used this period</span>
-              <span className="font-medium">{artifactsUsed} / {artifactQuota || '∞'}</span>
-            </div>
-            {artifactQuota > 0 && (
-              <Progress value={Math.min(100, (artifactsUsed / artifactQuota) * 100)} className="h-2" />
-            )}
+            <div style={{ fontFamily: 'var(--font-display)', fontSize: 36, color: 'var(--ink)', lineHeight: 1 }}>{creditsBalance.toLocaleString()}</div>
+            <div style={{ fontFamily: 'var(--font-mono)', fontSize: 10, textTransform: 'uppercase', letterSpacing: '0.16em', color: 'var(--ink-muted)', marginTop: 4 }}>Available credits</div>
           </div>
-          <Separator />
-          <div className="flex items-center justify-between">
-            <div>
-              <p className="font-semibold text-2xl">{creditsBalance.toLocaleString()}</p>
-              <p className="text-xs text-muted-foreground">Available credits</p>
-            </div>
-            {daysLeft !== null && (
-              <p className="text-xs text-muted-foreground">Period resets in {daysLeft} days</p>
-            )}
-          </div>
-          {creditTransactions.length > 0 && (
-            <div className="space-y-1.5">
-              <p className="text-xs font-medium text-muted-foreground uppercase tracking-wider">Recent Activity</p>
-              {creditTransactions.map(tx => (
-                <div key={tx.id} className="flex items-center justify-between text-sm">
-                  <span className="text-muted-foreground capitalize">{tx.transaction_type?.replace('_', ' ')} — {tx.reason || '—'}</span>
-                  <span className={tx.amount > 0 ? 'text-green-600 font-medium' : 'text-red-500 font-medium'}>
-                    {tx.amount > 0 ? '+' : ''}{tx.amount}
-                  </span>
-                </div>
-              ))}
-            </div>
+          {daysLeft !== null && (
+            <div style={{ fontFamily: 'var(--font-mono)', fontSize: 10, textTransform: 'uppercase', letterSpacing: '0.14em', color: 'var(--ink-muted)' }}>Period resets in {daysLeft} days</div>
           )}
-        </CardContent>
-      </Card>
+        </div>
 
-      {/* Buy Credits */}
-      <Card>
-        <CardHeader className="pb-3">
-          <CardTitle className="text-base">Buy Credits</CardTitle>
-          <CardDescription>Credits are used for audience requests and enrichment.</CardDescription>
-        </CardHeader>
-        <CardContent>
-          <div className="grid sm:grid-cols-2 gap-3">
-            {CREDIT_PACKS.map(pack => (
-              <div
-                key={pack.id}
-                className={`relative border rounded-xl p-4 cursor-pointer hover:border-primary/50 transition-colors ${pack.popular ? 'border-primary bg-primary/5' : 'border-border'}`}
-              >
-                {pack.popular && (
-                  <span className="absolute -top-2.5 left-3 text-xs bg-primary text-primary-foreground px-2 py-0.5 rounded-full">Most Popular</span>
-                )}
-                <p className="font-semibold">{pack.label}</p>
-                <p className="text-2xl font-bold mt-1">{pack.priceLabel}</p>
-                <p className="text-xs text-muted-foreground mb-3">${(pack.price / pack.credits).toFixed(2)}/credit</p>
-                <Button
-                  size="sm"
-                  className="w-full"
-                  variant={pack.popular ? 'default' : 'outline'}
-                  disabled={buyingPack === pack.id}
-                  onClick={() => handleBuyCredits(pack)}
-                >
-                  {buyingPack === pack.id ? <RefreshCw className="w-3.5 h-3.5 animate-spin" /> : 'Purchase'}
-                </Button>
+        {creditTransactions.length > 0 && (
+          <div style={{ marginTop: 20, borderTop: '1px solid var(--line-soft)', paddingTop: 16 }}>
+            <div style={{ fontFamily: 'var(--font-mono)', fontSize: 10, textTransform: 'uppercase', letterSpacing: '0.18em', color: 'var(--ink-muted)', marginBottom: 12 }}>Recent Activity</div>
+            {creditTransactions.map(tx => (
+              <div key={tx.id} style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '8px 0', borderBottom: '1px solid var(--line-soft)' }}>
+                <span style={{ fontFamily: 'var(--font-body)', fontSize: 13, color: 'var(--ink-soft)', textTransform: 'capitalize' }}>
+                  {tx.transaction_type?.replace('_', ' ')} — {tx.reason || '—'}
+                </span>
+                <span style={{ fontFamily: 'var(--font-mono)', fontSize: 12, fontWeight: 600, color: tx.amount > 0 ? 'var(--secondary)' : 'var(--danger)' }}>
+                  {tx.amount > 0 ? '+' : ''}{tx.amount}
+                </span>
               </div>
             ))}
           </div>
-        </CardContent>
-      </Card>
+        )}
+      </div>
+
+      {/* Buy Credits */}
+      <div style={{ background: 'var(--surface)', borderRadius: 16, padding: 28, border: '1px solid var(--line)', marginBottom: 20 }}>
+        <div style={{ marginBottom: 20 }}>
+          <span style={{ fontFamily: 'var(--font-mono)', fontSize: 10, textTransform: 'uppercase', letterSpacing: '0.18em', color: 'var(--ink-muted)' }}>Buy Credits</span>
+          <p style={{ fontFamily: 'var(--font-body)', fontSize: 14, color: 'var(--ink-muted)', marginTop: 4, marginBottom: 0 }}>Credits are used for audience requests and enrichment.</p>
+        </div>
+        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(2, 1fr)', gap: 12 }}>
+          {CREDIT_PACKS.map(pack => (
+            <div key={pack.id} className="card-lift" style={{ position: 'relative', border: `1px solid ${pack.popular ? 'var(--accent)' : 'var(--line)'}`, borderRadius: 12, padding: 20, background: pack.popular ? 'rgba(242,92,42,0.04)' : 'var(--canvas)', cursor: 'pointer' }}>
+              {pack.popular && (
+                <span style={{ position: 'absolute', top: -10, left: 12, fontFamily: 'var(--font-mono)', fontSize: 9, textTransform: 'uppercase', letterSpacing: '0.16em', background: 'var(--accent)', color: '#fff', padding: '3px 10px', borderRadius: 'var(--radius-pill)' }}>Most Popular</span>
+              )}
+              <div style={{ fontFamily: 'var(--font-body)', fontSize: 14, fontWeight: 500, color: 'var(--ink)', marginBottom: 4 }}>{pack.label}</div>
+              <div style={{ fontFamily: 'var(--font-display)', fontSize: 28, color: 'var(--ink)', lineHeight: 1, marginBottom: 4 }}>{pack.priceLabel}</div>
+              <div style={{ fontFamily: 'var(--font-mono)', fontSize: 10, textTransform: 'uppercase', letterSpacing: '0.14em', color: 'var(--ink-muted)', marginBottom: 16 }}>${(pack.price / pack.credits).toFixed(2)}/credit</div>
+              <button
+                disabled={buyingPack === pack.id}
+                onClick={() => handleBuyCredits(pack)}
+                style={{ width: '100%', fontFamily: 'var(--font-body)', fontSize: 13, fontWeight: 600, padding: '9px 0', borderRadius: 'var(--radius-pill)', border: pack.popular ? 'none' : '1px solid var(--line)', background: pack.popular ? 'var(--accent)' : 'transparent', color: pack.popular ? '#fff' : 'var(--ink)', cursor: buyingPack === pack.id ? 'not-allowed' : 'pointer', opacity: buyingPack === pack.id ? 0.6 : 1, display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 6 }}>
+                {buyingPack === pack.id ? <RefreshCw size={13} style={{ animation: 'spin 0.8s linear infinite' }} /> : 'Purchase'}
+              </button>
+            </div>
+          ))}
+        </div>
+      </div>
 
       {/* Invoice History */}
       {invoices.length > 0 && (
-        <Card>
-          <CardHeader className="pb-3">
-            <CardTitle className="text-base flex items-center gap-2">
-              <FileText className="w-4 h-4" /> Invoice History
-            </CardTitle>
-          </CardHeader>
-          <CardContent>
-            <div className="space-y-2">
-              {invoices.map(inv => (
-                <div key={inv.id} className="flex items-center justify-between p-3 border border-border rounded-lg text-sm">
-                  <div>
-                    <p className="font-medium">${((inv.amount_paid || inv.amount_due || 0) / 100).toFixed(2)}</p>
-                    <p className="text-xs text-muted-foreground">{format(new Date(inv.issued_at || inv.created_date), 'MMM d, yyyy')}</p>
-                  </div>
-                  <div className="flex items-center gap-3">
-                    <Badge variant={inv.status === 'paid' ? 'secondary' : inv.status === 'open' ? 'outline' : 'destructive'}>
-                      {inv.status}
-                    </Badge>
-                    {inv.hosted_invoice_url && (
-                      <a href={inv.hosted_invoice_url} target="_blank" rel="noreferrer">
-                        <Button size="sm" variant="ghost" className="h-7 px-2 gap-1">
-                          View <ExternalLink className="w-3 h-3" />
-                        </Button>
-                      </a>
-                    )}
-                    {inv.invoice_pdf_url && (
-                      <a href={inv.invoice_pdf_url} target="_blank" rel="noreferrer">
-                        <Button size="sm" variant="ghost" className="h-7 px-2">PDF</Button>
-                      </a>
-                    )}
-                  </div>
+        <div style={{ background: 'var(--surface)', borderRadius: 16, padding: 28, border: '1px solid var(--line)' }}>
+          <div style={{ display: 'flex', alignItems: 'center', gap: 10, marginBottom: 20 }}>
+            <FileText size={16} style={{ color: 'var(--ink-muted)' }} />
+            <span style={{ fontFamily: 'var(--font-mono)', fontSize: 10, textTransform: 'uppercase', letterSpacing: '0.18em', color: 'var(--ink-muted)' }}>Invoice History</span>
+          </div>
+          <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
+            {invoices.map(inv => (
+              <div key={inv.id} style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '14px 16px', border: '1px solid var(--line)', borderRadius: 10 }}>
+                <div>
+                  <div style={{ fontFamily: 'var(--font-body)', fontSize: 14, fontWeight: 500, color: 'var(--ink)' }}>${((inv.amount_paid || inv.amount_due || 0) / 100).toFixed(2)}</div>
+                  <div style={{ fontFamily: 'var(--font-mono)', fontSize: 10, textTransform: 'uppercase', letterSpacing: '0.14em', color: 'var(--ink-muted)', marginTop: 2 }}>{format(new Date(inv.issued_at || inv.created_date), 'MMM d, yyyy')}</div>
                 </div>
-              ))}
-            </div>
-          </CardContent>
-        </Card>
+                <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
+                  <span style={{
+                    fontFamily: 'var(--font-mono)', fontSize: 10, textTransform: 'uppercase', letterSpacing: '0.12em',
+                    background: inv.status === 'paid' ? 'rgba(14,92,74,0.1)' : 'var(--canvas)',
+                    color: inv.status === 'paid' ? 'var(--secondary)' : 'var(--ink-muted)',
+                    borderRadius: 'var(--radius-pill)', padding: '4px 10px'
+                  }}>{inv.status}</span>
+                  {inv.hosted_invoice_url && (
+                    <a href={inv.hosted_invoice_url} target="_blank" rel="noreferrer"
+                      style={{ fontFamily: 'var(--font-body)', fontSize: 12, color: 'var(--accent)', textDecoration: 'none', display: 'flex', alignItems: 'center', gap: 4 }}>
+                      View <ExternalLink size={11} />
+                    </a>
+                  )}
+                  {inv.invoice_pdf_url && (
+                    <a href={inv.invoice_pdf_url} target="_blank" rel="noreferrer"
+                      style={{ fontFamily: 'var(--font-body)', fontSize: 12, color: 'var(--ink-muted)', textDecoration: 'none' }}>
+                      PDF
+                    </a>
+                  )}
+                </div>
+              </div>
+            ))}
+          </div>
+        </div>
       )}
+
+      <style>{`@keyframes spin { to { transform: rotate(360deg); } }`}</style>
     </div>
   );
 }
